@@ -1,9 +1,12 @@
 import React, { useState } from "react";
+import axios from 'axios'
 import NavBar from "../shared/NavBar";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { Link } from "react-router-dom";
+import { toast } from 'sonner'
+import { Link, useNavigate } from "react-router-dom";
+import { USER_API_END_POINT } from "../../utils/constant";
 
 const Signup = () => {
   const [input, setInput] = useState({
@@ -14,6 +17,7 @@ const Signup = () => {
     role: "",
     file: "",
   });
+  const navigate=useNavigate();
 
   const changeEventHandler = (e) => {
     const { name, value, files } = e.target;
@@ -22,7 +26,30 @@ const Signup = () => {
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    console.log(input);
+    const formData=new FormData();
+    formData.append("fullname",input.fullname);
+    formData.append("email",input.email);
+    formData.append("phoneNumber",input.phoneNumber);
+    formData.append("password",input.password);
+    formData.append("role",input.role);
+    if(input.file){
+      formData.append("file",input.file);
+    }
+    try {
+      const res=await axios.post(`${USER_API_END_POINT}/register`,formData,{
+        headers:{
+          "Content-Type":"multipart/form-data"
+        },
+        withCredentials:true
+      })
+      if(res.data.success){
+        navigate("/login")
+        toast.success(res.data.message)
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response.data.message);
+    }
   };
 
   return (
@@ -69,7 +96,7 @@ const Signup = () => {
           <div className="mb-4">
             <Label className="text-zinc-600">Phone Number</Label>
             <Input
-              type="tel"
+              type="text"
               name="phoneNumber"
               value={input.phoneNumber}
               onChange={changeEventHandler}
