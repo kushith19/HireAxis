@@ -1,10 +1,12 @@
 import React, { useState } from "react";
-import axios from 'axios'
+import axios from "axios";
 import NavBar from "../shared/NavBar";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { toast } from 'sonner'
+import { useDispatch, useSelector } from "react-redux";
+import { setLoading } from "@/redux/authSlice";
+import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
 import { USER_API_END_POINT } from "../../utils/constant";
 
@@ -17,8 +19,9 @@ const Signup = () => {
     role: "",
     file: "",
   });
-  const navigate=useNavigate();
-
+   const { loading } = useSelector((store) => store.auth);
+  const navigate = useNavigate();
+ const dispatch = useDispatch();
   const changeEventHandler = (e) => {
     const { name, value, files } = e.target;
     setInput({ ...input, [name]: files ? files[0] : value });
@@ -26,29 +29,32 @@ const Signup = () => {
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    const formData=new FormData();
-    formData.append("fullname",input.fullname);
-    formData.append("email",input.email);
-    formData.append("phoneNumber",input.phoneNumber);
-    formData.append("password",input.password);
-    formData.append("role",input.role);
-    if(input.file){
-      formData.append("file",input.file);
+    const formData = new FormData();
+    formData.append("fullname", input.fullname);
+    formData.append("email", input.email);
+    formData.append("phoneNumber", input.phoneNumber);
+    formData.append("password", input.password);
+    formData.append("role", input.role);
+    if (input.file) {
+      formData.append("file", input.file);
     }
     try {
-      const res=await axios.post(`${USER_API_END_POINT}/register`,formData,{
-        headers:{
-          "Content-Type":"multipart/form-data"
+        dispatch(setLoading(true));
+      const res = await axios.post(`${USER_API_END_POINT}/register`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
         },
-        withCredentials:true
-      })
-      if(res.data.success){
-        navigate("/login")
-        toast.success(res.data.message)
+        withCredentials: true,
+      });
+      if (res.data.success) {
+        navigate("/login");
+        toast.success(res.data.message);
       }
     } catch (error) {
       console.log(error);
       toast.error(error.response.data.message);
+    }finally{
+        dispatch(setLoading(false));
     }
   };
 
@@ -156,12 +162,22 @@ const Signup = () => {
           </div>
 
           {/* Submit */}
-          <Button
-            type="submit"
-            className="w-full bg-zinc-700 hover:bg-zinc-600 text-white font-medium rounded-lg py-2 transition-all"
-          >
-            Create Account
-          </Button>
+          {loading ? (
+            <Button
+              disabled
+              className="w-full bg-zinc-700 text-white font-medium rounded-lg py-2 transition-all"
+            >
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Loading...
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              className="w-full bg-zinc-700 hover:bg-zinc-600 text-white font-medium rounded-lg py-2 transition-all"
+            >
+              Create Account
+            </Button>
+          )}
 
           {/* Footer */}
           <p className="text-sm text-center text-zinc-500 mt-5">

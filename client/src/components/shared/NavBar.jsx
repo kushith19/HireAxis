@@ -23,7 +23,7 @@ const NavBar = () => {
           {/* Navigation */}
           <ul className="flex items-center gap-6 font-medium text-zinc-700">
             <li className="transition-colors cursor-pointer hover:text-zinc-900">
-              Home
+             <Link to="/">Home</Link>
             </li>
             <li className="transition-colors cursor-pointer hover:text-zinc-900">
               Jobs

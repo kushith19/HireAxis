@@ -1,13 +1,15 @@
 import React, { useState } from "react";
-import axios from 'axios'
+import axios from "axios";
 import NavBar from "../shared/NavBar";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
-import { toast } from 'sonner'
+import { toast } from "sonner";
 import { Button } from "../ui/button";
-import { Link,useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { setLoading } from "@/redux/authSlice";
 import { USER_API_END_POINT } from "../../utils/constant";
-
+import { Loader2 } from "lucide-react";
 
 const Login = () => {
   const [input, setInput] = useState({
@@ -15,28 +17,34 @@ const Login = () => {
     password: "",
     role: "",
   });
-  const navigate=useNavigate();
+  const { loading } = useSelector((store) => store.auth);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
   const changeEventHandler = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
   };
 
   const submitHandler = async (e) => {
     e.preventDefault();
-   
+
     try {
-      const res=await axios.post(`${USER_API_END_POINT}/login`,input,{
-        headers:{
-          "Content-Type":"application/json"
+      dispatch(setLoading(true));
+      const res = await axios.post(`${USER_API_END_POINT}/login`, input, {
+        headers: {
+          "Content-Type": "application/json",
         },
-        withCredentials:true
-      })
-      if(res.data.success){
-        navigate("/")
-        toast.success(res.data.message)
+        withCredentials: true,
+      });
+      if (res.data.success) {
+        navigate("/");
+        toast.success(res.data.message);
       }
     } catch (error) {
       console.log(error);
-     toast.error(error.response.data.message);
+      toast.error(error.response.data.message);
+    } finally {
+      dispatch(setLoading(false));
     }
   };
   return (
@@ -105,12 +113,22 @@ const Login = () => {
           </div>
 
           {/* Submit */}
-          <Button
-            type="submit"
-            className="w-full bg-zinc-700 hover:bg-zinc-600 text-white font-medium rounded-lg py-2 transition-all"
-          >
-            Login
-          </Button>
+          {loading ? (
+            <Button
+              disabled
+              className="w-full bg-zinc-700 text-white font-medium rounded-lg py-2 transition-all"
+            >
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Loading...
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              className="w-full bg-zinc-700 hover:bg-zinc-600 text-white font-medium rounded-lg py-2 transition-all"
+            >
+              Login
+            </Button>
+          )}
 
           {/* Footer */}
           <p className="text-sm text-center text-zinc-500 mt-5">
