@@ -1,6 +1,7 @@
 import React from "react";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { Link } from 'react-router-dom'
+import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 import {
   Popover,
   PopoverContent,
@@ -10,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { User, LogOut } from "lucide-react";
 
 const NavBar = () => {
-  const user = false;
+  const { user } = useSelector((store) => store.auth);
   return (
     <div className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-300 bg-gradient-to-r from-zinc-100 via-zinc-200 to-zinc-100 backdrop-blur-md">
       <div className="flex items-center justify-between h-16 px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -23,27 +24,37 @@ const NavBar = () => {
           {/* Navigation */}
           <ul className="flex items-center gap-6 font-medium text-zinc-700">
             <li className="transition-colors cursor-pointer hover:text-zinc-900">
-             <Link to="/">Home</Link>
+              <Link to="/">Home</Link>
             </li>
-            <li className="transition-colors cursor-pointer hover:text-zinc-900">
-              Jobs
-            </li>
-            <li className="transition-colors cursor-pointer hover:text-zinc-900">
-              Discover
-            </li>
+            <Link to="/jobs">
+              {" "}
+              <li className="transition-colors cursor-pointer hover:text-zinc-900">
+                Jobs
+              </li>
+            </Link>
+            <Link to="/discover">
+              <li className="transition-colors cursor-pointer hover:text-zinc-900">
+                Discover
+              </li>
+            </Link>
           </ul>
 
           {!user ? (
             <div className="flex items-center gap-3">
-              <Link to="/login"><Button
-                variant="outline"
-                className="px-4 py-2 border-zinc-400 text-zinc-700 hover:bg-zinc-200/70 hover:text-zinc-900 transition-colors"
-              >
-                Login
-              </Button></Link>
-             <Link to="/signup"> <Button className="px-4 py-2 bg-zinc-900 text-zinc-100 hover:bg-zinc-800 transition-colors">
-                Sign Up
-              </Button></Link>
+              <Link to="/login">
+                <Button
+                  variant="outline"
+                  className="px-4 py-2 border-zinc-400 text-zinc-700 hover:bg-zinc-200/70 hover:text-zinc-900 transition-colors"
+                >
+                  Login
+                </Button>
+              </Link>
+              <Link to="/signup">
+                {" "}
+                <Button className="px-4 py-2 bg-zinc-900 text-zinc-100 hover:bg-zinc-800 transition-colors">
+                  Sign Up
+                </Button>
+              </Link>
             </div>
           ) : (
             <Popover>
@@ -77,15 +88,17 @@ const NavBar = () => {
                   <hr className="border-zinc-300" />
 
                   <div className="flex flex-col gap-1">
-                    <Button
-                      variant="ghost"
-                      className="justify-start w-full gap-2 p-2 text-left hover:bg-zinc-200/70"
-                    >
-                      <User className="w-4 h-4 text-zinc-600" />
-                      <span className="text-sm font-medium text-zinc-700">
-                        View Profile
-                      </span>
-                    </Button>
+                    <Link to="/profile">
+                      <Button
+                        variant="ghost"
+                        className="justify-start w-full gap-2 p-2 text-left hover:bg-zinc-200/70"
+                      >
+                        <User className="w-4 h-4 text-zinc-600" />
+                        <span className="text-sm font-medium text-zinc-700">
+                          View Profile
+                        </span>
+                      </Button>
+                    </Link>
                     <Button
                       variant="ghost"
                       className="justify-start w-full gap-2 p-2 text-left hover:bg-zinc-200/70"

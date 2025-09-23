@@ -3,6 +3,9 @@ import NavBar from './components/shared/NavBar'
 import Login from './components/auth/Login'
 import SignUp from './components/auth/SignUp'
 import Home from './components/Home'
+import Jobs from './components/Jobs';
+import Discover from './components/Discover';
+import Profile from './components/Profile';
 const appRouter=createBrowserRouter([
   {
     path:'/',
@@ -16,6 +19,18 @@ const appRouter=createBrowserRouter([
     path:'/signup',
     element:<SignUp/>
   },
+  {
+    path:'/jobs',
+    element:<Jobs/>
+  },
+  {
+    path:'/discover',
+    element:<Discover/>
+  },
+  {
+    path:'/profile',
+    element:<Profile/>
+  }
 ])
 function App() {
  
