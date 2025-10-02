@@ -3,8 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge"; 
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const Job = () => {
+  const navigate=useNavigate()
   return (
     <div className="p-4 rounded-lg border border-zinc-200 bg-white hover:shadow-md transition-shadow cursor-pointer">
       {/* Top row */}
@@ -54,7 +56,7 @@ const Job = () => {
 
       {/* Actions */}
       <div className="flex items-center gap-2 mt-5">
-        <Button className="h-8 text-xs bg-zinc-700 text-white hover:bg-zinc-600">
+        <Button onClick={() => navigate('/description/1')} className="h-8 text-xs bg-zinc-700 text-white hover:bg-zinc-600">
           View
         </Button>
         <Button

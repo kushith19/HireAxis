@@ -1,17 +1,39 @@
 import React from "react";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { Link } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { Link ,useNavigate} from "react-router-dom";
+import { useSelector,useDispatch } from "react-redux";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { toast } from "sonner";
+import { setUser } from '@/redux/authSlice'
 import { Button } from "@/components/ui/button";
 import { User, LogOut } from "lucide-react";
+import { USER_API_END_POINT } from '@/utils/constant'
+import axios from "axios";
 
 const NavBar = () => {
   const { user } = useSelector((store) => store.auth);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const logoutHandler = async () => {
+    try {
+      const res=await axios.get(`${USER_API_END_POINT}/logout`,{
+        withCredentials:true
+      });
+      if(res.data?.success){
+        dispatch(setUser(null));
+        navigate('/')
+        toast.success(res.data?.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response.data?.message || "Something went wrong");
+
+    }
+  }
   return (
     <div className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-300 bg-gradient-to-r from-zinc-100 via-zinc-200 to-zinc-100 backdrop-blur-md">
       <div className="flex items-center justify-between h-16 px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -102,6 +124,7 @@ const NavBar = () => {
                     <Button
                       variant="ghost"
                       className="justify-start w-full gap-2 p-2 text-left hover:bg-zinc-200/70"
+                      onClick={logoutHandler}
                     >
                       <LogOut className="w-4 h-4 text-zinc-600" />
                       <span className="text-sm font-medium text-zinc-700">
