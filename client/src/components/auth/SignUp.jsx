@@ -9,6 +9,7 @@ import { setLoading } from "@/redux/authSlice";
 import { toast } from "sonner";
 import { Link, useNavigate } from "react-router-dom";
 import { USER_API_END_POINT } from "../../utils/constant";
+import { Loader2 } from 'lucide-react'
 
 const Signup = () => {
   const [input, setInput] = useState({

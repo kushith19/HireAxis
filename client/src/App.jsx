@@ -7,6 +7,7 @@ import Jobs from './components/Jobs';
 import Discover from './components/Discover';
 import Profile from './components/Profile';
 import JobDescription from './components/JobDescription';
+import ProtectedRoute from './components/ProtectedRoute';
 const appRouter=createBrowserRouter([
   {
     path:'/',
@@ -34,7 +35,7 @@ const appRouter=createBrowserRouter([
   },
   {
     path:'/profile',
-    element:<Profile/>
+    element:<ProtectedRoute><Profile/></ProtectedRoute>
   }
   
 ])

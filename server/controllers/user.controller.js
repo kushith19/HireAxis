@@ -1,6 +1,7 @@
 import { User } from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import getDataUri from "../utils/datauri.js";
 
 import cloudinary from "../utils/cloudinary.js";
 import axios from "axios";
@@ -13,6 +14,11 @@ export const register = async (req, res) => {
         success: false,
       });
     }
+    //cloudinary
+    const file = req.file;
+    const fileUri = getDataUri(file);
+    const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
+
     const user = await User.findOne({ email });
     if (user) {
       return res.status(400).json({
@@ -29,6 +35,9 @@ export const register = async (req, res) => {
       phoneNumber,
       password: hashedPassword,
       role,
+      profile: {
+        profilePhoto: cloudResponse.secure_url,
+      },
     });
 
     return res.status(200).json({
@@ -115,21 +124,22 @@ export const logout = async (req, res) => {
   }
 };
 
-
-
 export const updateProfile = async (req, res) => {
   try {
     const { fullname, email, phoneNumber, bio, skills } = req.body;
     const userId = req.id;
 
     let user = await User.findById(userId);
-    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+    if (!user)
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
 
     if (fullname) user.fullname = fullname;
     if (email) user.email = email;
     if (phoneNumber) user.phoneNumber = phoneNumber;
     if (bio) user.profile.bio = bio;
-    if (skills) user.profile.skills = skills.split(",").map(s => s.trim());
+    if (skills) user.profile.skills = skills.split(",").map((s) => s.trim());
 
     // Upload resume if file exists
     if (req.file) {
@@ -156,7 +166,13 @@ export const updateProfile = async (req, res) => {
       profile: user.profile,
     };
 
-    res.status(200).json({ success: true, message: "Profile updated successfully", user: safeUser });
+    res
+      .status(200)
+      .json({
+        success: true,
+        message: "Profile updated successfully",
+        user: safeUser,
+      });
   } catch (error) {
     console.error("Update profile error:", error);
     res.status(500).json({ success: false, message: "Server error" });
@@ -167,7 +183,8 @@ export const updateProfile = async (req, res) => {
 export const downloadResume = async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
-    if (!user || !user.profile.resume) return res.status(404).send("Resume not found");
+    if (!user || !user.profile.resume)
+      return res.status(404).send("Resume not found");
 
     const fileUrl = user.profile.resume;
     const fileName = user.profile.resumeOriginalName;
@@ -183,4 +200,3 @@ export const downloadResume = async (req, res) => {
     res.status(500).send("Error downloading file");
   }
 };
-

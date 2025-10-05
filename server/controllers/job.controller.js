@@ -64,26 +64,46 @@
   }
  }
 
- export const getJobById=async (req,res)=>{
+export const getJobById = async (req, res) => {
   try {
-    const jobId=req.params.id;
-    const job=await Job.findById(jobId);
+    const jobId = req.params.id;
 
-    if(!job){
-      return res.status(404).json({
-        message:"job not found",
-        success:true
-      })
+    // Validate ID
+    if (!jobId) {
+      return res.status(400).json({
+        message: "Job ID is required",
+        success: false,
+      });
     }
+
+    // Fetch job with populated fields
+    const job = await Job.findById(jobId)
+      .populate("company") // populate company details
+      .populate({
+        path: "applications",
+        populate: { path: "applicant", select: "_id fullname email" }, // populate applicant details
+      });
+
+    if (!job) {
+      return res.status(404).json({
+        message: "Job not found",
+        success: false,
+      });
+    }
+
     return res.status(200).json({
       job,
-      success:true
-    })
+      success: true,
+    });
   } catch (error) {
-    console.log(error);
-    
+    console.error(error);
+    return res.status(500).json({
+      message: "Server error",
+      success: false,
+    });
   }
- }
+};
+
 
  export const getAdminJobs=async(req,res)=>{
   try {

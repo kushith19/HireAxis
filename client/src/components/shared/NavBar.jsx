@@ -38,9 +38,11 @@ const NavBar = () => {
     <div className="fixed top-0 left-0 right-0 z-50 border-b border-zinc-300 bg-gradient-to-r from-zinc-100 via-zinc-200 to-zinc-100 backdrop-blur-md">
       <div className="flex items-center justify-between h-16 px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
         {/* Logo */}
-        <h1 className="text-2xl font-bold text-zinc-900">
+      <div onClick={()=>navigate('/')} className="cursor-pointer">
+          <h1 className="text-2xl font-bold text-zinc-900">
           Job<span className="text-zinc-600">Juice</span>
         </h1>
+      </div>
 
         <div className="flex items-center gap-6">
           {/* Navigation */}
@@ -83,7 +85,7 @@ const NavBar = () => {
               <PopoverTrigger asChild>
                 <Avatar className="cursor-pointer hover:opacity-80 transition-opacity">
                   <AvatarImage
-                    src="https://github.com/shadcn.png"
+                    src={user?.profile?.profilePhoto}
                     alt="@shadcn"
                   />
                 </Avatar>
@@ -96,13 +98,13 @@ const NavBar = () => {
                   <div className="flex items-center gap-3">
                     <Avatar>
                       <AvatarImage
-                        src="https://github.com/shadcn.png"
+                        src={user?.profile?.profilePhoto}
                         alt="@shadcn"
                       />
                     </Avatar>
                     <div className="flex flex-col">
                       <h4 className="font-medium text-zinc-900">
-                        Kushith Gowda
+                        {user?.fullname}
                       </h4>
                     </div>
                   </div>

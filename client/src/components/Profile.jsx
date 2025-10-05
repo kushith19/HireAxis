@@ -1,5 +1,4 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import NavBar from "./shared/NavBar";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Contact, Mail, Pen } from "lucide-react";
@@ -13,82 +12,110 @@ import { useSelector } from "react-redux";
 
 const Profile = () => {
   const [open, setOpen] = useState(false);
-  
   const { user } = useSelector((store) => store.auth);
 
   return (
-    <div>
+    <div className="bg-zinc-100 min-h-screen font-sans">
       <NavBar />
-      <div className="max-w-4xl mx-auto  bg-white border-gray-200 my-6 p-8 rounded-2xl shadow pt-18">
-        <div className="flex justify-between">
-          <div className="flex items-center gap-6">
-            <Avatar className="h-24 w-24 border border-zinc-200">
+
+      {/* Profile Card */}
+      <div className="max-w-4xl mx-auto bg-white border border-zinc-200 mt-16 p-6 rounded-2xl shadow-sm ">
+        <div className="flex justify-between items-start">
+          {/* Avatar + Info */}
+          <div className="flex items-center gap-5">
+            <Avatar className="h-20 w-20 border border-zinc-200 shadow-sm">
               <AvatarImage
-                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQGhlhf55WdtBvjfyTjNi8Yh_bfrMc9uGv_uQ&s"
+                src={user?.profile?.profilePhoto}
                 alt="profile"
               />
             </Avatar>
             <div>
-              <h1 className="font-medium text-xl ">{user?.fullname}</h1>
-              <p>{user?.profile?.bio}</p>
+              <h1 className="text-2xl font-semibold text-zinc-900 leading-tight">
+                {user?.fullname}
+              </h1>
+              <p className="text-sm text-zinc-600 mt-1">
+                {user?.profile?.bio || "No bio added"}
+              </p>
             </div>
           </div>
+
+          {/* Edit Button */}
           <Button
             onClick={() => setOpen(true)}
-            className="text-right"
+            size="icon"
             variant="outline"
+            className="rounded-full border-zinc-300 hover:bg-zinc-100 transition"
           >
-            <Pen />
+            <Pen className="h-4 w-4 text-zinc-700" />
           </Button>
         </div>
-        <div>
-          <div className="flex items-center gap-3 my-2">
-            <Mail />
-            <span>{user?.email}</span>
+
+        {/* Contact Info */}
+        <div className="mt-4 space-y-1 text-zinc-700">
+          <div className="flex items-center gap-2">
+            <Mail className="h-4 w-4 text-zinc-500" />
+            <span className="text-sm">{user?.email}</span>
           </div>
-          <div className="flex items-center gap-3 my-2">
-            <Contact />
-            <span>{user?.phoneNumber}</span>
+          <div className="flex items-center gap-2">
+            <Contact className="h-4 w-4 text-zinc-500" />
+            <span className="text-sm">
+              {user?.phoneNumber || "No phone added"}
+            </span>
           </div>
         </div>
 
-        <div>
-          <h1>Skills</h1>
-          <div className="flex items-center gap-1">
-            {user?.profile?.skills?.length != 0 ? (
+        {/* Skills */}
+        <div className="mt-5">
+          <h2 className="text-base font-semibold text-zinc-800 mb-2">Skills</h2>
+          <div className="flex flex-wrap gap-2">
+            {user?.profile?.skills?.length !== 0 ? (
               user?.profile?.skills?.map((item, index) => (
-                <Badge key={index} className="m-1">
+                <Badge
+                  key={index}
+                  variant="outline"
+                  className="px-2 py-0.5 rounded-full border-zinc-300 text-zinc-700 text-xs bg-zinc-50 hover:bg-zinc-100"
+                >
                   {item}
                 </Badge>
               ))
             ) : (
-              <p>No skills added</p>
+              <p className="text-sm text-zinc-500">No skills added</p>
             )}
           </div>
         </div>
 
-        <div className="grid w-full max-w-sm items-center gap-1.5 mt-4">
-          <Label className="text-md font-bold">Resume</Label>
+        {/* Resume */}
+        <div className="grid w-full max-w-sm items-center gap-1.5 mt-5">
+          <Label className="text-sm font-semibold text-zinc-800">Resume</Label>
           {user?.profile?.resume ? (
-            <a
-              href={`${USER_API_END_POINT}/user/${user._id}/download-resume`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-500 w-full hover:underline cursor-pointer"
+            <Button
+              asChild
+              variant="outline"
+              className="w-fit px-3 py-1 border-zinc-300 text-zinc-700 text-xs font-medium hover:bg-zinc-100"
             >
-              {user?.profile?.resumeOriginalName || "View Resume"}
-            </a>
+              <a
+                href={`${USER_API_END_POINT}/user/${user._id}/download-resume`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {user?.profile?.resumeOriginalName || "Download Resume"}
+              </a>
+            </Button>
           ) : (
-            <p>No resume uploaded</p>
+            <p className="text-sm text-zinc-500">No resume uploaded</p>
           )}
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto bg-white border-gray-200 my-6 p-8 rounded-2xl shadow">
-        <h1 className="font-bold text-lg my-5">Applied Jobs</h1>
-        {/* application table */}
+      {/* Applied Jobs Section */}
+      <div className="max-w-4xl mx-auto bg-white border border-zinc-200 mt-8 p-6 rounded-2xl shadow-sm">
+        <h1 className="text-lg font-semibold text-zinc-900 mb-3">
+          Applied Jobs
+        </h1>
         <AppliedJobTable />
       </div>
+
+      {/* Update Profile Dialog */}
       <UpdateProfile open={open} setOpen={setOpen} />
     </div>
   );
