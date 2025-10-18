@@ -71,7 +71,7 @@ const JobDescription = () => {
     <div className="min-h-screen bg-gradient-to-br from-zinc-200 via-zinc-300 to-zinc-200 py-12 px-4 pt-24">
       <NavBar />
       <div className="max-w-5xl mx-auto">
-        {/* Header Section */}
+      
         <div className="bg-zinc-100/80 border border-zinc-300 rounded-2xl shadow-sm p-8 mb-10 transition-all hover:shadow-md hover:border-zinc-400">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
@@ -104,7 +104,7 @@ const JobDescription = () => {
           </div>
         </div>
 
-        {/* Job Details */}
+      
         <div className="bg-zinc-100 border border-zinc-300 rounded-2xl shadow-sm p-8 space-y-4 hover:shadow-md transition-all">
           <h2 className="text-lg font-semibold text-zinc-900 border-b pb-3 border-zinc-300">
             Job Details
@@ -130,10 +130,7 @@ const JobDescription = () => {
               <span className="font-medium text-zinc-900">Requirements:</span>{" "}
               <span className="text-zinc-700">{singleJob?.requirements}</span>
             </p>
-            {/* <p>
-              <span className="font-medium text-zinc-900">Experience:</span>{" "}
-              <span className="text-zinc-700">{singleJob?.experience} yrs</span>
-            </p> */}
+           
             <p>
               <span className="font-medium text-zinc-900">Salary:</span>{" "}
               <span className="text-zinc-700">₹ {singleJob?.salary} LPA</span>

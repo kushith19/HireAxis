@@ -15,7 +15,7 @@ const Job = ({job}) => {
   }
   return (
     <div className="p-4 rounded-lg border border-zinc-200 bg-white hover:shadow-md transition-shadow cursor-pointer">
-      {/* Top row */}
+
       <div className="flex items-center justify-between">
         <p className="text-[11px] text-zinc-500">{daysAgoFunction(job?.createdAt ) === 0? "Today" :daysAgoFunction(job?.createdAt) + " " +"days ago"} </p>
         <Button
@@ -27,7 +27,6 @@ const Job = ({job}) => {
         </Button>
       </div>
 
-      {/* Company info */}
       <div className="flex items-center gap-2 mt-3">
         <Avatar className="h-9 w-9 border border-zinc-200">
           <AvatarImage src={job?.company?.logo} />
@@ -38,7 +37,7 @@ const Job = ({job}) => {
         </div>
       </div>
 
-      {/* Job info */}
+    
       <div className="mt-4">
         <h3 className="font-bold text-base text-zinc-900">{job?.title}</h3>
         <p className="text-xs text-zinc-600 mt-1 leading-snug">
@@ -46,7 +45,7 @@ const Job = ({job}) => {
         </p>
       </div>
 
-      {/* Badges */}
+    
       <div className="flex flex-wrap items-center gap-1.5 mt-4">
         <Badge className="bg-zinc-100 text-zinc-700 border border-zinc-200 text-xs px-2 py-0.5">
           {job?.positions} Positions
@@ -59,7 +58,7 @@ const Job = ({job}) => {
         </Badge>
       </div>
 
-      {/* Actions */}
+ 
       <div className="flex items-center gap-2 mt-5">
         <Button onClick={() => navigate(`/description/${job?._id}`)} className="h-8 text-xs bg-zinc-700 text-white hover:bg-zinc-600">
           View

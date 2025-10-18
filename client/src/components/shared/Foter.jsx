@@ -6,7 +6,7 @@ const Footer = () => {
     <footer className="bg-gradient-to-r from-zinc-50 via-zinc-100 to-zinc-50 border-t border-zinc-200">
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Logo + About */}
+         
           <div className="md:col-span-1">
             <h2 className="text-2xl font-bold text-zinc-900">
               Hire<span className="text-zinc-600">Axis</span>
@@ -17,7 +17,7 @@ const Footer = () => {
             </p>
           </div>
 
-          {/* Quick Links */}
+      
           <div>
             <h3 className="text-sm font-semibold text-zinc-800 mb-3">
               Quick Links
@@ -55,7 +55,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Socials */}
+     
           <div>
             <h3 className="text-sm font-semibold text-zinc-800 mb-3">
               Follow Us
@@ -92,7 +92,7 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Newsletter */}
+      
           <div>
             <h3 className="text-sm font-semibold text-zinc-800 mb-3">
               Stay Updated
@@ -116,7 +116,7 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Bottom Bar */}
+   
         <div className="mt-10 pt-6 border-t border-zinc-200 flex flex-col md:flex-row justify-between items-center text-sm text-zinc-500">
           <p>© {new Date().getFullYear()} HireAxis. All rights reserved.</p>
           <div className="flex space-x-6 mt-3 md:mt-0">

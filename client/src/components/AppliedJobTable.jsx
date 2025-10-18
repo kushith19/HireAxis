@@ -11,20 +11,20 @@ import {
 import { useSelector } from "react-redux";
 import { Badge } from "@/components/ui/badge";
 
-// FIX 1: Make the status check case-insensitive
+
 const getBadgeClass = (status) => {
-  // Convert status to lowercase for reliable matching
+
   switch (status ? status.toLowerCase() : "pending") {
     case "accepted":
       return "bg-emerald-100 text-emerald-800 border border-emerald-200";
     case "rejected":
       return "bg-red-100 text-red-800 border border-red-200";
-    default: // "pending"
+    default: 
       return "bg-zinc-100 text-zinc-800 border border-zinc-200";
   }
 };
 
-// NEW: Helper function to make the displayed status look clean
+
 const capitalizeStatus = (status) => {
   if (!status) return "Pending";
   return status.charAt(0).toUpperCase() + status.slice(1);
@@ -75,7 +75,7 @@ const AppliedJobTable = () => {
                       appliedJob.status
                     )}`}
                   >
-                    {/* FIX 2: Use the capitalize helper for clean text */}
+                  
                     {capitalizeStatus(appliedJob.status)}
                   </Badge>
                 </TableCell>

@@ -22,7 +22,7 @@ const Discover = () => {
       <NavBar />
 
       <div className="max-w-7xl mx-auto px-4 pt-20 pb-12">
-        {/* Heading */}
+   
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-zinc-900">
             Search Results
@@ -34,7 +34,7 @@ const Discover = () => {
           </p>
         </div>
 
-        {/* Job Grid */}
+      
         {allJobs.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {allJobs.map((job, index) => (

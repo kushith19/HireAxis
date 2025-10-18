@@ -33,13 +33,9 @@ const Applicants = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-zinc-100 via-zinc-200 to-zinc-100">
       <NavBar />
-      {/* This is now a simple, single-column container */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-8 pt-24 pb-16">
-        
-        {/* The table component now takes the full width */}
-        <ApplicantsTable />
 
-        {/* The "huge" sidebar div is completely removed */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-8 pt-24 pb-16">
+        <ApplicantsTable />
       </div>
     </div>
   );

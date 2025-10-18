@@ -32,12 +32,12 @@ const CategoryCarousel = () => {
   return (
     <section className="pb-16 bg-gradient-to-r from-zinc-50 via-zinc-100 to-zinc-50">
       <div className="max-w-5xl mx-auto text-center px-6">
-        {/* Heading */}
+      
         <h2 className="text-2xl sm:text-3xl font-bold text-zinc-900 mb-8">
           Browse by <span className="text-zinc-700">Categories</span>
         </h2>
 
-        {/* Carousel */}
+       
         <Carousel className="w-full">
           <CarouselContent className="-ml-2 md:-ml-4">
             {categories.map((cat, index) => (
@@ -56,7 +56,7 @@ const CategoryCarousel = () => {
             ))}
           </CarouselContent>
 
-          {/* Navigation Buttons */}
+      
           <CarouselPrevious className="left-2 bg-white/90 border border-zinc-300 shadow-sm hover:bg-zinc-100" />
           <CarouselNext className="right-2 bg-white/90 border border-zinc-300 shadow-sm hover:bg-zinc-100" />
         </Carousel>

@@ -24,7 +24,7 @@ const AdminJobs = () => {
       <NavBar />
 
       <div className="max-w-6xl mx-auto">
-        {/* Top section: Filter + New Job */}
+   
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8 bg-zinc-50 border border-zinc-200 rounded-xl shadow-sm p-4 sm:p-5">
           <Input
             className="w-full sm:w-1/2 bg-zinc-100 border-zinc-300 focus:border-zinc-500 focus:ring-0"
@@ -40,7 +40,7 @@ const AdminJobs = () => {
           </Button>
         </div>
 
-        {/* Jobs Table Card */}
+      
         <div className="bg-zinc-50 rounded-2xl shadow-sm border border-zinc-200 overflow-hidden">
           <AdminJobsTable />
         </div>

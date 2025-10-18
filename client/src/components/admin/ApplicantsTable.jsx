@@ -50,7 +50,6 @@ const ApplicantsTable = () => {
     }
   };
 
-  // NEW: Helper function to get button colors
   const getButtonClass = (status) => {
     switch (status) {
       case "Accepted":
@@ -134,8 +133,7 @@ const ApplicantsTable = () => {
 
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
-                      {/* --- MODIFIED --- */}
-                      {/* This is now a Button styled with custom colors */}
+                 
                       <Button
                         variant="outline"
                         className={`text-xs px-2.5 py-0.5 h-auto rounded-md font-medium pointer-events-none ${getButtonClass(
@@ -144,7 +142,7 @@ const ApplicantsTable = () => {
                       >
                         {displayStatus}
                       </Button>
-                      {/* --- END MODIFIED --- */}
+                  
 
                       {displayStatus !== "Accepted" &&
                         displayStatus !== "Rejected" && (

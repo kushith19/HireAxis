@@ -12,27 +12,26 @@ import { useSelector } from "react-redux";
 import useGetAppliedJobs from "../hooks/useGetAppliedJobs";
 
 const Profile = () => {
-  // This hook call is important!
+ 
   useGetAppliedJobs();
 
   const [open, setOpen] = useState(false);
   const { user } = useSelector((store) => store.auth);
 
   return (
-    // UPDATED: Darker background
+  
     <div className="bg-zinc-200 min-h-screen font-sans">
       <NavBar />
 
-      {/* UPDATED: Added padding to this container */}
+     
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16 pt-20">
         
-        {/* Profile Card */}
-        {/* UPDATED: Lighter card, darker border, no top margin */}
+     
         <div className="bg-zinc-50 border border-zinc-300 p-6 rounded-2xl shadow-sm ">
           <div className="flex justify-between items-start">
-            {/* Avatar + Info */}
+       
             <div className="flex items-center gap-5">
-              {/* UPDATED: Darker border */}
+             
               <Avatar className="h-20 w-20 border border-zinc-300 shadow-sm">
                 <AvatarImage
                   src={user?.profile?.profilePhoto ? user.profile.profilePhoto : "./uploads/user.png"}
@@ -49,7 +48,7 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Edit Button */}
+            
             <Button
               onClick={() => setOpen(true)}
               size="icon"
@@ -60,7 +59,7 @@ const Profile = () => {
             </Button>
           </div>
 
-          {/* Contact Info */}
+      
           <div className="mt-4 space-y-1 text-zinc-700">
             <div className="flex items-center gap-2">
               <Mail className="h-4 w-4 text-zinc-500" />
@@ -74,7 +73,7 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Skills */}
+        
           <div className="mt-5">
             <h2 className="text-base font-semibold text-zinc-800 mb-2">Skills</h2>
             <div className="flex flex-wrap gap-2">
@@ -83,7 +82,7 @@ const Profile = () => {
                   <Badge
                     key={index}
                     variant="outline"
-                    // UPDATED: Badge colors changed to stand out on bg-zinc-50
+                   
                     className="px-2 py-0.5 rounded-full border-zinc-300 text-zinc-700 text-xs bg-zinc-100 hover:bg-zinc-200"
                   >
                     {item}
@@ -118,17 +117,16 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* Applied Jobs Section */}
-        {/* UPDATED: Lighter card, darker border */}
+       
         <div className="bg-zinc-50 border border-zinc-300 mt-8 rounded-2xl shadow-sm overflow-hidden">
           <h1 className="text-lg font-semibold text-zinc-900 mb-3 px-6 pt-6">
             Applied Jobs
           </h1>
-          {/* Table is now part of this card, without its own padding */}
+       
           <AppliedJobTable />
         </div>
 
-        {/* Update Profile Dialog */}
+   
         <UpdateProfile open={open} setOpen={setOpen} />
       </div>
     </div>
