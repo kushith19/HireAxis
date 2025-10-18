@@ -8,31 +8,89 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useSelector } from "react-redux";
 import { Badge } from "@/components/ui/badge";
+
+// FIX 1: Make the status check case-insensitive
+const getBadgeClass = (status) => {
+  // Convert status to lowercase for reliable matching
+  switch (status ? status.toLowerCase() : "pending") {
+    case "accepted":
+      return "bg-emerald-100 text-emerald-800 border border-emerald-200";
+    case "rejected":
+      return "bg-red-100 text-red-800 border border-red-200";
+    default: // "pending"
+      return "bg-zinc-100 text-zinc-800 border border-zinc-200";
+  }
+};
+
+// NEW: Helper function to make the displayed status look clean
+const capitalizeStatus = (status) => {
+  if (!status) return "Pending";
+  return status.charAt(0).toUpperCase() + status.slice(1);
+};
+
 const AppliedJobTable = () => {
+  const { allAppliedJobs } = useSelector((store) => store.job);
+
   return (
     <div>
       <Table>
-        <TableCaption>list of your applied jobs</TableCaption>
-        <TableHeader>
+        <TableCaption className="text-zinc-500 italic">
+          {allAppliedJobs?.length > 0
+            ? "A list of all jobs you have applied for"
+            : ""}
+        </TableCaption>
+
+        <TableHeader className="bg-zinc-100/70">
           <TableRow>
-            <TableHead>Date</TableHead>
-            <TableHead>Job Role</TableHead>
-            <TableHead>Company</TableHead>
-            <TableHead className="text-right">Status</TableHead>
+            <TableHead className="text-zinc-700 font-medium">Date</TableHead>
+            <TableHead className="text-zinc-700 font-medium">Job Role</TableHead>
+            <TableHead className="text-zinc-700 font-medium">Company</TableHead>
+            <TableHead className="text-right text-zinc-700 font-medium">
+              Status
+            </TableHead>
           </TableRow>
         </TableHeader>
+
         <TableBody>
-          {[1, 2, 3, 4, 5].map((item, index) => (
-            <TableRow key={index}>
-              <TableCell>12-03-2023</TableCell>
-              <TableCell>Frontend Developer</TableCell>
-              <TableCell>Google</TableCell>
-              <TableCell className="text-right">
-                <Badge>Pending</Badge>
+          {allAppliedJobs?.length > 0 ? (
+            allAppliedJobs.map((appliedJob) => (
+              <TableRow
+                key={appliedJob._id}
+                className="hover:bg-zinc-100/60 transition-colors"
+              >
+                <TableCell className="font-medium text-zinc-800">
+                  {appliedJob.createdAt.split("T")[0]}
+                </TableCell>
+                <TableCell className="text-zinc-700">
+                  {appliedJob?.job?.title}
+                </TableCell>
+                <TableCell className="text-zinc-700">
+                  {appliedJob?.job?.company?.name}
+                </TableCell>
+                <TableCell className="text-right">
+                  <Badge
+                    className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${getBadgeClass(
+                      appliedJob.status
+                    )}`}
+                  >
+                    {/* FIX 2: Use the capitalize helper for clean text */}
+                    {capitalizeStatus(appliedJob.status)}
+                  </Badge>
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell
+                colSpan={4}
+                className="text-center py-8 text-zinc-500 italic"
+              >
+                You haven't applied for any jobs yet
               </TableCell>
             </TableRow>
-          ))}
+          )}
         </TableBody>
       </Table>
     </div>

@@ -9,7 +9,7 @@ const Footer = () => {
           {/* Logo + About */}
           <div className="md:col-span-1">
             <h2 className="text-2xl font-bold text-zinc-900">
-              Job<span className="text-zinc-600">Juice</span>
+              Hire<span className="text-zinc-600">Axis</span>
             </h2>
             <p className="mt-3 text-sm text-zinc-600 max-w-xs">
               Your trusted platform to connect talent with opportunities.
@@ -118,7 +118,7 @@ const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="mt-10 pt-6 border-t border-zinc-200 flex flex-col md:flex-row justify-between items-center text-sm text-zinc-500">
-          <p>© {new Date().getFullYear()} JobJuice. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} HireAxis. All rights reserved.</p>
           <div className="flex space-x-6 mt-3 md:mt-0">
             <a
               href="/privacy"

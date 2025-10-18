@@ -7,6 +7,10 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Button } from "./ui/button";
+import { useDispatch } from "react-redux";
+import { setSearchQuery } from "../redux/jobSlice";
+import { useNavigate } from "react-router-dom";
+
 
 const categories = [
   "Front End Developer",
@@ -17,6 +21,14 @@ const categories = [
 ];
 
 const CategoryCarousel = () => {
+ 
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const searchJobHandler = (query) => {
+    dispatch(setSearchQuery(query));
+    navigate("discover");
+  };
+
   return (
     <section className="pb-16 bg-gradient-to-r from-zinc-50 via-zinc-100 to-zinc-50">
       <div className="max-w-5xl mx-auto text-center px-6">
@@ -35,6 +47,7 @@ const CategoryCarousel = () => {
               >
                 <Button
                   variant="outline"
+                  onClick={() => searchJobHandler(cat)}
                   className="w-full py-6 border-zinc-300 text-zinc-700 font-medium rounded-xl bg-white hover:bg-zinc-100 transition-all"
                 >
                   {cat}

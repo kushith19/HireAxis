@@ -1,9 +1,13 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge"; // use shadcn badge, not lucide
-
+import { useNavigate } from "react-router-dom";
 const LatestJobCards = ({ job }) => {
+  const navigate = useNavigate();
+  const handleClick = () => {
+    navigate(`/description/${job?._id}`);
+  };
   return (
-    <div className="p-6 bg-white border border-zinc-200 rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer">
+    <div onClick={handleClick} className="p-6 bg-white border border-zinc-200 rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer">
       {/* Company */}
       <div>
         <h1 className="font-semibold text-lg text-zinc-800">{job?.company?.name}</h1>
@@ -34,7 +38,7 @@ const LatestJobCards = ({ job }) => {
           variant="secondary"
           className="bg-zinc-100 text-zinc-700 border border-zinc-200"
         >
-         {job?.salary}
+         {job?.salary} LPA
         </Badge>
       </div>
     </div>

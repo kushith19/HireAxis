@@ -110,7 +110,7 @@ const JobDescription = () => {
             Job Details
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 text-zinc-800">
+          <div className="grid grid-cols-2 sm:grid-cols-2 gap-y-3 text-zinc-800">
             <p>
               <span className="font-medium text-zinc-900">Role:</span>{" "}
               <span className="text-zinc-700">{singleJob?.title}</span>
@@ -119,16 +119,21 @@ const JobDescription = () => {
               <span className="font-medium text-zinc-900">Location:</span>{" "}
               <span className="text-zinc-700">{singleJob?.location}</span>
             </p>
+           
             <p className="sm:col-span-2">
               <span className="font-medium text-zinc-900">Description:</span>{" "}
               <span className="text-zinc-700 leading-relaxed">
                 {singleJob?.description}
               </span>
             </p>
-            <p>
+             <p>
+              <span className="font-medium text-zinc-900">Requirements:</span>{" "}
+              <span className="text-zinc-700">{singleJob?.requirements}</span>
+            </p>
+            {/* <p>
               <span className="font-medium text-zinc-900">Experience:</span>{" "}
               <span className="text-zinc-700">{singleJob?.experience} yrs</span>
-            </p>
+            </p> */}
             <p>
               <span className="font-medium text-zinc-900">Salary:</span>{" "}
               <span className="text-zinc-700">₹ {singleJob?.salary} LPA</span>
