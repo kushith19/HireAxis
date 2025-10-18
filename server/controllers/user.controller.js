@@ -153,7 +153,6 @@ export const updateProfile = async (req, res) => {
     if (bio) user.profile.bio = bio;
     if (skills) user.profile.skills = skills.split(",").map((s) => s.trim());
 
-    // Upload resume if file exists
     if (req.file) {
       const cloudResponse = await new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
@@ -191,7 +190,7 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-// Stream resume download with correct filename
+
 export const downloadResume = async (req, res) => {
   try {
     const user = await User.findById(req.params.userId);
