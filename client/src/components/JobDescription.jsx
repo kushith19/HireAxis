@@ -26,9 +26,12 @@ const JobDescription = () => {
 
   const applyJobHandler = async () => {
     try {
-      const res = await axios.get(`${APPLICATION_API_END_POINT}/${jobId}/apply`, {
-        withCredentials: true,
-      });
+      const res = await axios.get(
+        `${APPLICATION_API_END_POINT}/${jobId}/apply`,
+        {
+          withCredentials: true,
+        }
+      );
 
       if (res.data.success) {
         setIsApplied(true);
@@ -71,7 +74,6 @@ const JobDescription = () => {
     <div className="min-h-screen bg-gradient-to-br from-zinc-200 via-zinc-300 to-zinc-200 py-12 px-4 pt-24">
       <NavBar />
       <div className="max-w-5xl mx-auto">
-      
         <div className="bg-zinc-100/80 border border-zinc-300 rounded-2xl shadow-sm p-8 mb-10 transition-all hover:shadow-md hover:border-zinc-400">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
@@ -104,13 +106,12 @@ const JobDescription = () => {
           </div>
         </div>
 
-      
         <div className="bg-zinc-100 border border-zinc-300 rounded-2xl shadow-sm p-8 space-y-4 hover:shadow-md transition-all">
           <h2 className="text-lg font-semibold text-zinc-900 border-b pb-3 border-zinc-300">
             Job Details
           </h2>
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 gap-y-3 text-zinc-800">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 text-zinc-800">
             <p>
               <span className="font-medium text-zinc-900">Role:</span>{" "}
               <span className="text-zinc-700">{singleJob?.title}</span>
@@ -119,27 +120,34 @@ const JobDescription = () => {
               <span className="font-medium text-zinc-900">Location:</span>{" "}
               <span className="text-zinc-700">{singleJob?.location}</span>
             </p>
-           
-            <p className="sm:col-span-2">
-              <span className="font-medium text-zinc-900">Description:</span>{" "}
-              <span className="text-zinc-700 leading-relaxed">
-                {singleJob?.description}
+
+            <p>
+              <span className="font-medium text-zinc-900">Experience:</span>{" "}
+              <span className="text-zinc-700">
+                {singleJob?.experienceLevel}
               </span>
             </p>
-             <p>
-              <span className="font-medium text-zinc-900">Requirements:</span>{" "}
-              <span className="text-zinc-700">{singleJob?.requirements}</span>
-            </p>
-           
             <p>
               <span className="font-medium text-zinc-900">Salary:</span>{" "}
               <span className="text-zinc-700">₹ {singleJob?.salary} LPA</span>
             </p>
+
             <p>
-              <span className="font-medium text-zinc-900">Total Applicants:</span>{" "}
+              <span className="font-medium text-zinc-900">Positions:</span>{" "}
+              <span className="text-zinc-700">{singleJob?.position}</span>
+            </p>
+            <p>
+              <span className="font-medium text-zinc-900">
+                Total Applicants:
+              </span>{" "}
               <span className="text-zinc-700">
                 {singleJob?.applications?.length}
               </span>
+            </p>
+
+            <p>
+              <span className="font-medium text-zinc-900">Requirements:</span>{" "}
+              <span className="text-zinc-700">{singleJob?.requirements}</span>
             </p>
             <p>
               <span className="font-medium text-zinc-900">Posted On:</span>{" "}
@@ -147,6 +155,15 @@ const JobDescription = () => {
                 {singleJob?.createdAt?.split("T")[0]}
               </span>
             </p>
+
+            <div className="md:col-span-2">
+              <p>
+                <span className="font-medium text-zinc-900">Description:</span>{" "}
+                <span className="text-zinc-700 leading-relaxed">
+                  {singleJob?.description}
+                </span>
+              </p>
+            </div>
           </div>
         </div>
       </div>

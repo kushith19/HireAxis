@@ -14,6 +14,7 @@ import CompanySetup from './components/admin/CompanySetup';
 import AdminJobs from './components/admin/AdminJobs';
 import PostJob from './components/admin/PostJob';
 import Applicants from './components/admin/Applicants';
+import AdminJobEdit from './components/admin/AdminJobEdit';
 const appRouter=createBrowserRouter([
   {
     path:'/',
@@ -41,7 +42,7 @@ const appRouter=createBrowserRouter([
   },
   {
     path:'/profile',
-    element:<ProtectedRoute><Profile/></ProtectedRoute>
+    element:<Profile/>
   },
   //Adimn routes
   {
@@ -59,6 +60,10 @@ const appRouter=createBrowserRouter([
   {
     path:'/admin/companies/:id',
     element:<ProtectedRoute><CompanySetup></CompanySetup></ProtectedRoute> 
+  },
+  {
+    path:'/admin/jobs/:id',
+    element:<ProtectedRoute><AdminJobEdit/></ProtectedRoute> 
   },
   {
     path:'/admin/jobs/:id/applicants',

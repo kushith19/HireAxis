@@ -83,7 +83,7 @@ const AdminJobsTable = () => {
                     </PopoverTrigger>
                     <PopoverContent className="w-36 bg-zinc-50 border border-zinc-200 shadow-sm rounded-lg">
                       <div
-                        onClick={() => navigate(`/admin/jobs/create/${job._id}`)}
+                        onClick={() => navigate(`/admin/jobs/${job._id}`)}
                         className="flex items-center gap-2 w-full text-zinc-700 hover:text-zinc-900 hover:bg-zinc-100 p-2 rounded-md cursor-pointer transition-colors"
                       >
                         <Edit2 className="h-4 w-4" />
