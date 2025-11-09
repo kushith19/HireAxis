@@ -1,4 +1,7 @@
 
 /uploads
 .env
+.env.local
+.env.*    
+
 /node_modules
