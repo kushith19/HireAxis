@@ -1,32 +1,33 @@
 import express from "express";
 import {
-  login,
-  logout,
-  register,
-  updateProfile,
-  downloadResume,
+    login,
+    logout,
+    register,
+    updateProfile,
+    downloadResume,
 } from "../controllers/user.controller.js";
 import isAuthenticated from "../middlewares/isAuthenticated.js";
-import { singleUpload } from "../middlewares/multer.js";
-import { uploadTemp } from './middlewares/multerML.config.js'; 
-import { isAuthenticated } from './middlewares/isAuthenticated.js'; 
-import { updateProfileWithMLSkills, suggestJobs } from './controllers/mlProfileController.js';
+// FIX: Import both new Multer middlewares
+import { singleUploadMemory, singleUploadDisk } from "../middlewares/multer.js"; 
+import { updateProfileWithMLSkills, suggestJobs } from '../controllers/mlProfileController.js';
 
 const router = express.Router();
 
-router.route("/register").post(singleUpload,register);
+// Existing routes use MEMORY storage (safe for standard updates)
+router.route("/register").post(singleUploadMemory, register); 
 router.route("/login").post(login);
-router.route("/profile/update").post(isAuthenticated, singleUpload,updateProfile);
+router.route("/profile/update").post(isAuthenticated, singleUploadMemory, updateProfile); 
+
 // Download resume
 router.get("/user/:userId/download-resume", isAuthenticated, downloadResume);
 router.route("/logout").get(logout);
 
 
-
+// --- ML-Enabled Route: Uses DISK Storage ---
 router.post(
     '/profile/update-ml', 
-    isAuthenticated, // Assuming user must be logged in
-    uploadTemp.single('resumeFile'), // IMPORTANT: Must match the name in the frontend FormData
+    isAuthenticated,
+    singleUploadDisk, // <-- CRITICAL: Disk storage provides req.file.path
     updateProfileWithMLSkills
 );
 
@@ -36,10 +37,6 @@ router.get(
     isAuthenticated, 
     suggestJobs
 );
-
-
-
-
 
 
 export default router;

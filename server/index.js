@@ -8,6 +8,9 @@ dotenv.config({})
 import companyRoute from "./routes/company.routes.js"
 import JobRoute from "./routes/job.routes.js"
 import applicationRoute from "./routes/application.routes.js"
+import fs from "fs"
+import path from "path";
+
 const app=express();
 
 //middleware
@@ -33,6 +36,18 @@ app.use("/api/v1/user",userRoute)
 app.use("/api/v1/company",companyRoute)
 app.use("/api/v1/job",JobRoute)
 app.use("/api/v1/application",applicationRoute)
+
+
+// static serving 
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+
+// ensure dirs
+const tempDir = path.join(process.cwd(), "uploads", "temp");
+const resumesDir = path.join(process.cwd(), "uploads", "resumes");
+[tempDir, resumesDir].forEach((d) => {
+  if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
+});
+
 
 
 

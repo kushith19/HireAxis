@@ -38,7 +38,7 @@ const AdminJobEdit = () => {
       salary: singleJob?.salary || "",
       location: singleJob?.location || "",
       jobType: singleJob?.jobType || "",
-      experienceLevel: singleJob?.experience || "",
+      experienceLevel: singleJob?.experienceLevel || "",
       position: singleJob?.position || "",
     });
   }, [singleJob]);
@@ -53,7 +53,7 @@ const submitHandler = async (e) => {
     setLoading(true);
     const res = await axios.put(
       `${JOB_API_END_POINT}/update/${params.id}`,
-      input, // directly send JSON
+      input,
       {
         withCredentials: true,
       }

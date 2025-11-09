@@ -1,40 +1,73 @@
 import React, { useState } from "react";
 import NavBar from "./shared/NavBar";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { Contact, Mail, Pen } from "lucide-react";
+import { Contact, Mail, Pen, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import AppliedJobTable from "./AppliedJobTable";
 import UpdateProfile from "./UpdateProfile";
-import { USER_API_END_POINT } from "../utils/constant";
 import { useSelector } from "react-redux";
 import useGetAppliedJobs from "../hooks/useGetAppliedJobs";
+import { toast } from "sonner";
+
+// --- RESTORED ORIGINAL IMPORT ---
+// This ensures your resume download link uses the correct API base URL
+import { USER_API_END_POINT } from "../utils/constant";
 
 const Profile = () => {
- 
   useGetAppliedJobs();
 
   const [open, setOpen] = useState(false);
-  const { user } = useSelector((store) => store.auth);
+  // Use a placeholder if user is not available in props
+  const { user } = useSelector((store) => store.auth) || {};
+
+  const [isSuggesting, setIsSuggesting] = useState(false);
+
+  const suggestJobsHandler = () => {
+    if (!user?.profile?.skills || user.profile.skills.length === 0) {
+      toast.error(
+        "Please upload a resume or add skills to your profile first."
+      );
+      return;
+    }
+
+    setIsSuggesting(true);
+
+    try {
+      // 1. Get the current skills from the user object
+      const currentSkills = user.profile.skills;
+
+      // 2. Format them into a comma-separated string
+      const skillsString = currentSkills.join(",");
+
+      // 3. Encode the string and redirect to the Discover page
+      const encodedSkills = encodeURIComponent(skillsString);
+
+      // Navigate the user to the Discover page, passing skills as a query parameter
+      window.location.href = `/discover?skills=${encodedSkills}`;
+    } catch (error) {
+      console.error("Redirection Error:", error);
+      toast.error("Failed to generate suggestion link.");
+      setIsSuggesting(false);
+    }
+  };
 
   return (
-  
     <div className="bg-zinc-200 min-h-screen font-sans">
       <NavBar />
 
-     
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16 pt-20">
-        
-     
         <div className="bg-zinc-50 border border-zinc-300 p-6 rounded-2xl shadow-sm ">
           <div className="flex justify-between items-start">
-       
             <div className="flex items-center gap-5">
-             
               <Avatar className="h-20 w-20 border border-zinc-300 shadow-sm">
                 <AvatarImage
-                  src={user?.profile?.profilePhoto ? user.profile.profilePhoto : "./uploads/user.png"}
+                  src={
+                    user?.profile?.profilePhoto
+                      ? user.profile.profilePhoto
+                      : "./uploads/user.png"
+                  }
                   alt="Profile Photo"
                 />
               </Avatar>
@@ -48,7 +81,6 @@ const Profile = () => {
               </div>
             </div>
 
-            
             <Button
               onClick={() => setOpen(true)}
               size="icon"
@@ -59,7 +91,6 @@ const Profile = () => {
             </Button>
           </div>
 
-      
           <div className="mt-4 space-y-1 text-zinc-700">
             <div className="flex items-center gap-2">
               <Mail className="h-4 w-4 text-zinc-500" />
@@ -73,16 +104,16 @@ const Profile = () => {
             </div>
           </div>
 
-        
           <div className="mt-5">
-            <h2 className="text-base font-semibold text-zinc-800 mb-2">Skills</h2>
+            <h2 className="text-base font-semibold text-zinc-800 mb-2">
+              Skills
+            </h2>
             <div className="flex flex-wrap gap-2">
               {user?.profile?.skills?.length > 0 ? (
                 user?.profile?.skills?.map((item, index) => (
                   <Badge
                     key={index}
                     variant="outline"
-                   
                     className="px-2 py-0.5 rounded-full border-zinc-300 text-zinc-700 text-xs bg-zinc-100 hover:bg-zinc-200"
                   >
                     {item}
@@ -96,37 +127,57 @@ const Profile = () => {
 
           {/* Resume */}
           <div className="grid w-full max-w-sm items-center gap-1.5 mt-5">
-            <Label className="text-sm font-semibold text-zinc-800">Resume</Label>
+            <Label className="text-sm font-semibold text-zinc-800">
+              Resume
+            </Label>
             {user?.profile?.resume ? (
-              <Button
-                asChild
-                variant="outline"
-                className="w-fit px-3 py-1 border-zinc-300 text-zinc-700 text-xs font-medium hover:bg-zinc-100"
-              >
-                <a
-                  href={`${USER_API_END_POINT}/user/${user._id}/download-resume`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+              <div className="flex gap-4 items-center">
+                <Button
+                  asChild
+                  variant="outline"
+                  className="w-fit px-3 py-1 border-zinc-300 text-zinc-700 text-xs font-medium hover:bg-zinc-100"
                 >
-                  {user?.profile?.resumeOriginalName || "Download Resume"}
-                </a>
-              </Button>
+                  <a
+                    href={`${USER_API_END_POINT}/user/${user._id}/download-resume`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {user?.profile?.resumeOriginalName || "Download Resume"}
+                  </a>
+                </Button>
+
+                {/* Suggest Jobs Button */}
+                <Button
+                  onClick={suggestJobsHandler}
+                  disabled={isSuggesting}
+                  className="px-3 py-1 text-xs bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg"
+                >
+                  {isSuggesting ? (
+                    <>
+                      <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                      Suggesting...
+                    </>
+                  ) : (
+                    "Suggest Jobs"
+                  )}
+                </Button>
+              </div>
             ) : (
-              <p className="text-sm text-zinc-500">No resume uploaded</p>
+              <p className="text-sm text-zinc-500">
+                No resume uploaded. Upload one to enable job suggestions.
+              </p>
             )}
           </div>
         </div>
 
-       
         <div className="bg-zinc-50 border border-zinc-300 mt-8 rounded-2xl shadow-sm overflow-hidden">
           <h1 className="text-lg font-semibold text-zinc-900 mb-3 px-6 pt-6">
             Applied Jobs
           </h1>
-       
+
           <AppliedJobTable />
         </div>
 
-   
         <UpdateProfile open={open} setOpen={setOpen} />
       </div>
     </div>

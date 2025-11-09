@@ -2,14 +2,16 @@ import { User } from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import getDataUri from "../utils/datauri.js";
-
 import cloudinary from "../utils/cloudinary.js";
 import axios from "axios";
+import fs from "fs";
+import path from "path";
+
+// ================= REGISTER =================
 export const register = async (req, res) => {
   try {
     const { fullname, email, phoneNumber, password, role } = req.body;
 
-    // basic validation
     if (!fullname || !email || !phoneNumber || !password || !role) {
       return res.status(400).json({
         message: "Something is missing",
@@ -17,7 +19,6 @@ export const register = async (req, res) => {
       });
     }
 
-    // check if user exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({
@@ -43,7 +44,7 @@ export const register = async (req, res) => {
       password: hashedPassword,
       role,
       profile: {
-        profilePhoto: profilePhotoUrl, // null if no file uploaded
+        profilePhoto: profilePhotoUrl,
       },
     });
 
@@ -60,7 +61,7 @@ export const register = async (req, res) => {
   }
 };
 
-
+// ================= LOGIN =================
 export const login = async (req, res) => {
   try {
     const { email, password, role } = req.body;
@@ -71,6 +72,7 @@ export const login = async (req, res) => {
         success: false,
       });
     }
+
     let user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({
@@ -78,6 +80,7 @@ export const login = async (req, res) => {
         success: false,
       });
     }
+
     const isPasswordMatch = await bcrypt.compare(password, user.password);
     if (!isPasswordMatch) {
       return res.status(400).json({
@@ -85,7 +88,7 @@ export const login = async (req, res) => {
         success: false,
       });
     }
-    // check role is correct or not
+
     if (role !== user.role) {
       return res.status(400).json({
         message: "Account doesn't exist with current role.",
@@ -93,10 +96,8 @@ export const login = async (req, res) => {
       });
     }
 
-    const tokenData = {
-      userId: user._id,
-    };
-    const token = await jwt.sign(tokenData, process.env.SECRET_KEY, {
+    const tokenData = { userId: user._id };
+    const token = jwt.sign(tokenData, process.env.SECRET_KEY, {
       expiresIn: "1d",
     });
 
@@ -112,8 +113,8 @@ export const login = async (req, res) => {
     return res
       .status(200)
       .cookie("token", token, {
-        maxAge: 1 * 24 * 60 * 60 * 1000,
-        httpsOnly: true,
+        maxAge: 24 * 60 * 60 * 1000,
+        httpOnly: true,
         sameSite: "strict",
       })
       .json({
@@ -125,6 +126,8 @@ export const login = async (req, res) => {
     console.log(error);
   }
 };
+
+// ================= LOGOUT =================
 export const logout = async (req, res) => {
   try {
     return res.status(200).cookie("token", "", { maxAge: 0 }).json({
@@ -136,6 +139,10 @@ export const logout = async (req, res) => {
   }
 };
 
+// ================= UPDATE PROFILE =================
+
+
+
 export const updateProfile = async (req, res) => {
   try {
     const { fullname, email, phoneNumber, bio, skills } = req.body;
@@ -143,27 +150,51 @@ export const updateProfile = async (req, res) => {
 
     let user = await User.findById(userId);
     if (!user)
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+      return res.status(404).json({ success: false, message: "User not found" });
 
     if (fullname) user.fullname = fullname;
     if (email) user.email = email;
     if (phoneNumber) user.phoneNumber = phoneNumber;
     if (bio) user.profile.bio = bio;
-    if (skills) user.profile.skills = skills.split(",").map((s) => s.trim());
+    if (skills) user.profile.skills = skills.split(",").map((s) => s.trim()).filter(Boolean);
 
     if (req.file) {
-      const cloudResponse = await new Promise((resolve, reject) => {
-        const uploadStream = cloudinary.uploader.upload_stream(
-          { resource_type: "raw" },
-          (error, result) => (error ? reject(error) : resolve(result))
-        );
-        uploadStream.end(req.file.buffer);
-      });
+      // If multer wrote to disk (diskStorage), it provides a .path
+      if (req.file.path) {
+        // Move uploads/temp/<file> -> uploads/resumes/resume-<userId>-<ts>.<ext>
+        const resumesDir = path.join(process.cwd(), "uploads", "resumes");
+        if (!fs.existsSync(resumesDir)) fs.mkdirSync(resumesDir, { recursive: true });
 
-      user.profile.resume = cloudResponse.secure_url;
-      user.profile.resumeOriginalName = req.file.originalname;
+        const ext = path.extname(req.file.originalname) || ".pdf";
+        const finalFileName = `resume-${userId}-${Date.now()}${ext}`;
+        const finalDiskPath = path.join(resumesDir, finalFileName);
+
+        // move (rename) with copy fallback for Windows locks
+        try {
+          fs.renameSync(req.file.path, finalDiskPath);
+        } catch {
+          fs.copyFileSync(req.file.path, finalDiskPath);
+          fs.unlinkSync(req.file.path);
+        }
+
+        // store public URL and absolute disk path
+        user.profile.resume = `/uploads/resumes/${finalFileName}`;  // public URL (served by express.static)
+        user.profile.resumeDiskPath = finalDiskPath;                // absolute path for secure download
+        user.profile.resumeOriginalName = req.file.originalname;
+
+      } else if (req.file.buffer) {
+        // Memory storage -> Cloudinary (kept from your original)
+        const uploadResult = await new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { resource_type: "raw", folder: "resumes" },
+            (error, result) => (error ? reject(error) : resolve(result))
+          );
+          stream.end(req.file.buffer);
+        });
+        user.profile.resume = uploadResult.secure_url;
+        user.profile.resumeDiskPath = null; // not local
+        user.profile.resumeOriginalName = req.file.originalname;
+      }
     }
 
     await user.save();
@@ -177,37 +208,67 @@ export const updateProfile = async (req, res) => {
       profile: user.profile,
     };
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Profile updated successfully",
-        user: safeUser,
-      });
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      user: safeUser,
+    });
   } catch (error) {
     console.error("Update profile error:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
+// ================= DOWNLOAD RESUME =================
+
+
+
 
 export const downloadResume = async (req, res) => {
   try {
-    const user = await User.findById(req.params.userId);
-    if (!user || !user.profile.resume)
+    const user = await User.findById(req.params.userId).lean();
+    if (!user || !user.profile || !user.profile.resume) {
       return res.status(404).send("Resume not found");
+    }
 
-    const fileUrl = user.profile.resume;
-    const fileName = user.profile.resumeOriginalName;
+    const fileUrl = user.profile.resume; // could be /uploads/... OR https://cloud...
+    const fileName = user.profile.resumeOriginalName || "resume.pdf";
 
-    const response = await axios.get(fileUrl, { responseType: "stream" });
+    // Remote URL (Cloudinary)
+    if (/^https?:\/\//i.test(fileUrl)) {
+      const response = await axios.get(fileUrl, { responseType: "stream" });
+      res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+      if (response.headers["content-type"]) {
+        res.setHeader("Content-Type", response.headers["content-type"]);
+      }
+      response.data.pipe(res);
+      return;
+    }
 
-    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
-    res.setHeader("Content-Type", response.headers["content-type"]);
+    // Local file
+    // Prefer absolute path if stored:
+    let absPath = user.profile.resumeDiskPath;
 
-    response.data.pipe(res);
+    // Fallback: resolve from the stored public URL (/uploads/resumes/...)
+    if (!absPath) {
+      const cleanRel = fileUrl.replace(/^\/+/, ""); // remove leading slash
+      absPath = path.join(process.cwd(), cleanRel);
+    }
+
+    // Normalize and ensure it stays within /uploads/resumes
+    const base = path.join(process.cwd(), "uploads", "resumes");
+    const normalized = path.normalize(absPath);
+    if (!normalized.startsWith(base)) {
+      return res.status(400).send("Invalid resume path");
+    }
+
+    if (!fs.existsSync(normalized)) {
+      return res.status(404).send("Local resume not found");
+    }
+
+    return res.download(normalized, fileName);
   } catch (error) {
-    console.error(error);
+    console.error("Download resume error:", error);
     res.status(500).send("Error downloading file");
   }
 };

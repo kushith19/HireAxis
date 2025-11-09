@@ -14,10 +14,15 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Edit2, Eye, MoreHorizontal } from "lucide-react";
 
+
+
 const AdminJobsTable = () => {
   const navigate = useNavigate();
+
   const { allAdminJobs, searchJobByText } = useSelector((store) => store.job);
   const [filterJobs, setFilterJobs] = useState([]);
+
+
 
   useEffect(() => {
     const filteredJobs =

@@ -8,12 +8,15 @@ import { useDispatch } from "react-redux";
 import useGetAllAdminJobs from "../../hooks/useGetAllAdminJobs";
 import { setSearchJobByText } from "../../redux/jobSlice";
 
+
 const AdminJobs = () => {
   useGetAllAdminJobs();
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [input, setInput] = useState("");
+
+   
 
   useEffect(() => {
     dispatch(setSearchJobByText(input));

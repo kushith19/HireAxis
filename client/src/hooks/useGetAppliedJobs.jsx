@@ -7,6 +7,7 @@ import { setAllAppliedJobs } from "../redux/jobSlice";
 const useGetAppliedJobs = () => {
   const dispatch = useDispatch();
   useEffect(() => {
+      dispatch(setAllAppliedJobs([]));
     const fetchAppliedJobs = async () => {
       try {
         const res = await axios.get(`${APPLICATION_API_END_POINT}/getappliedjobs`, {
