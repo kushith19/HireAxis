@@ -1,6 +1,9 @@
-export const USER_API_END_POINT="http://localhost:5000/api/v1/user";
+const API_BASE_URL = "http://localhost:8000/api/v1";
 
-export const JOB_API_END_POINT="http://localhost:5000/api/v1/job"
-export const APPLICATION_API_END_POINT="http://localhost:5000/api/v1/application"
-export const COMPANY_API_END_POINT="http://localhost:5000/api/v1/company"
+export const USER_API_END_POINT = `${API_BASE_URL}/user`;
+export const JOB_API_END_POINT = `${API_BASE_URL}/job`;
+export const APPLICATION_API_END_POINT = `${API_BASE_URL}/application`;
+export const COMPANY_API_END_POINT = `${API_BASE_URL}/company`;
+export const INTERVIEW_TEST_API_END_POINT = `${API_BASE_URL}/interview`;
+export const OLLAMA_API_END_POINT = `${API_BASE_URL}/ollama`;
 

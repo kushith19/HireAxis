@@ -18,7 +18,7 @@ const Home = () => {
     }
   },[]);
   return (
-    <div>
+    <div className="min-h-screen">
       <NavBar></NavBar>
       <HeroSection />
       <CategoryCarousel></CategoryCarousel>

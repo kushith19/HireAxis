@@ -31,8 +31,17 @@ const userSchema=new mongoose.Schema({
     profilePhoto:{
       type:String,
       default:""
+    },
+    testResults:{
+      finalScore:{type:Number},
+      facialConfidenceScore:{type:Number},
+      correctnessScore:{type:Number},
+      testDate:{type:Date},
+      questions:[{type:String}],
+      videoPath:{type:String}
     }
   },
 },{timestamps:true});
 
-export const User=mongoose.model('User',userSchema)
+// Check if model already exists to prevent overwrite error
+export const User = mongoose.models.User || mongoose.model('User', userSchema);

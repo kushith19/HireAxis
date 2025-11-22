@@ -24,11 +24,11 @@ const Job = ({ job, isSuggested, relevanceScore, matchedSkills }) => {
     }
 
     return (
-        <div className="p-4 rounded-lg border border-zinc-200 bg-white hover:shadow-md transition-shadow cursor-pointer">
+        <div className="p-4 rounded-lg border border-zinc-200 bg-white hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col">
 
             {/* AI SUGGESTION BANNER */}
             {isSuggested && relevanceScore !== undefined && (
-                <div className={`mb-3 p-2 rounded-lg border ${getRelevanceColor(relevanceScore)}`}>
+                <div className={`mb-3 p-2 rounded-lg border ${getRelevanceColor(relevanceScore)} flex-shrink-0`}>
                     <p className="text-xs font-semibold">
                         AI Match Score: <span className="font-bold">{relevanceScore}%</span>
                     </p>
@@ -38,7 +38,7 @@ const Job = ({ job, isSuggested, relevanceScore, matchedSkills }) => {
                 </div>
             )}
 
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-shrink-0">
                 <p className="text-[11px] text-zinc-500">{daysAgoFunction(job?.createdAt ) === 0 ? "Today" : daysAgoFunction(job?.createdAt) + " " +"days ago"} </p>
                 <Button
                     variant="outline"
@@ -49,7 +49,7 @@ const Job = ({ job, isSuggested, relevanceScore, matchedSkills }) => {
                 </Button>
             </div>
 
-            <div className="flex items-center gap-2 mt-3">
+            <div className="flex items-center gap-2 mt-3 flex-shrink-0">
                 <Avatar className="h-9 w-9 border border-zinc-200">
                     <AvatarImage src={job?.company?.logo} />
                 </Avatar>
@@ -60,15 +60,15 @@ const Job = ({ job, isSuggested, relevanceScore, matchedSkills }) => {
             </div>
 
             
-            <div className="mt-4">
-                <h3 className="font-bold text-base text-zinc-900">{job?.title}</h3>
-                <p className="text-xs text-zinc-600 mt-1 leading-snug">
+            <div className="mt-4 flex-1 flex flex-col">
+                <h3 className="font-bold text-base text-zinc-900 mb-1">{job?.title}</h3>
+                <p className="text-xs text-zinc-600 leading-snug line-clamp-3 flex-grow">
                 {job?.description}
                 </p>
             </div>
 
             
-            <div className="flex flex-wrap items-center gap-1.5 mt-4">
+            <div className="flex flex-wrap items-center gap-1.5 mt-4 flex-shrink-0">
                 <Badge className="bg-zinc-100 text-zinc-700 border border-zinc-200 text-xs px-2 py-0.5">
                     {job?.positions} Positions
                 </Badge>
@@ -80,7 +80,7 @@ const Job = ({ job, isSuggested, relevanceScore, matchedSkills }) => {
                 </Badge>
             </div>
 
-            <div className="flex items-center gap-2 mt-5">
+            <div className="flex items-center gap-2 mt-5 flex-shrink-0">
                 <Button onClick={() => navigate(`/description/${job?._id}`)} className="h-8 text-xs bg-zinc-700 text-white hover:bg-zinc-600">
                     View
                 </Button>

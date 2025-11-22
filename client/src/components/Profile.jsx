@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import AppliedJobTable from "./AppliedJobTable";
 import UpdateProfile from "./UpdateProfile";
+import TakeTestModal from "./TakeTestModal";
 import { useSelector } from "react-redux";
 import useGetAppliedJobs from "../hooks/useGetAppliedJobs";
 import { toast } from "sonner";
@@ -23,6 +24,7 @@ const Profile = () => {
   const { user } = useSelector((store) => store.auth) || {};
 
   const [isSuggesting, setIsSuggesting] = useState(false);
+  const [isTestModalOpen, setIsTestModalOpen] = useState(false);
 
   const suggestJobsHandler = () => {
     if (!user?.profile?.skills || user.profile.skills.length === 0) {
@@ -104,6 +106,43 @@ const Profile = () => {
             </div>
           </div>
 
+          {/* Test Results */}
+          {user?.profile?.testResults?.finalScore !== undefined && (
+            <div className="mt-5 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+              <h2 className="text-base font-semibold text-zinc-800 mb-3">
+                Interview Test Results
+              </h2>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-zinc-700">Final Score:</span>
+                  <span className="text-lg font-bold text-blue-700">
+                    {user.profile.testResults.finalScore.toFixed(1)}/100
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-zinc-700">Facial Confidence:</span>
+                  <span className="text-sm font-medium text-zinc-800">
+                    {user.profile.testResults.facialConfidenceScore?.toFixed(1) || "N/A"}/100
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-zinc-700">Answer Correctness:</span>
+                  <span className="text-sm font-medium text-zinc-800">
+                    {user.profile.testResults.correctnessScore?.toFixed(1) || "N/A"}/100
+                  </span>
+                </div>
+                {user.profile.testResults.testDate && (
+                  <div className="flex items-center justify-between pt-2 border-t border-blue-200">
+                    <span className="text-xs text-zinc-600">Test Date:</span>
+                    <span className="text-xs text-zinc-600">
+                      {new Date(user.profile.testResults.testDate).toLocaleDateString()}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className="mt-5">
             <h2 className="text-base font-semibold text-zinc-800 mb-2">
               Skills
@@ -126,16 +165,16 @@ const Profile = () => {
           </div>
 
           {/* Resume */}
-          <div className="grid w-full max-w-sm items-center gap-1.5 mt-5">
-            <Label className="text-sm font-semibold text-zinc-800">
+          <div className="mt-5 space-y-2">
+            <Label className="text-sm font-semibold text-zinc-800 flex items-center gap-2">
               Resume
             </Label>
             {user?.profile?.resume ? (
-              <div className="flex gap-4 items-center">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
                 <Button
                   asChild
                   variant="outline"
-                  className="w-fit px-3 py-1 border-zinc-300 text-zinc-700 text-xs font-medium hover:bg-zinc-100"
+                  className="px-3 py-1 border-zinc-300 text-zinc-700 text-xs font-medium hover:bg-zinc-100 md:flex-none"
                 >
                   <a
                     href={`${USER_API_END_POINT}/user/${user._id}/download-resume`}
@@ -146,21 +185,39 @@ const Profile = () => {
                   </a>
                 </Button>
 
-                {/* Suggest Jobs Button */}
-                <Button
-                  onClick={suggestJobsHandler}
-                  disabled={isSuggesting}
-                  className="px-3 py-1 text-xs bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg"
-                >
-                  {isSuggesting ? (
-                    <>
-                      <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                      Suggesting...
-                    </>
-                  ) : (
-                    "Suggest Jobs"
-                  )}
-                </Button>
+                <div className="flex gap-2 md:ml-auto md:flex-none">
+                  <Button
+                    onClick={() => {
+                      if (
+                        !navigator.mediaDevices ||
+                        !navigator.mediaDevices.getUserMedia
+                      ) {
+                        toast.error(
+                          "Camera API not supported in this browser."
+                        );
+                        return;
+                      }
+                      setIsTestModalOpen(true);
+                    }}
+                    className="px-4 py-2 text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg"
+                  >
+                    Take Test
+                  </Button>
+                  <Button
+                    onClick={suggestJobsHandler}
+                    disabled={isSuggesting}
+                    className="px-4 py-2 text-xs bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg"
+                  >
+                    {isSuggesting ? (
+                      <>
+                        <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                        Suggesting...
+                      </>
+                    ) : (
+                      "Suggest Jobs"
+                    )}
+                  </Button>
+                </div>
               </div>
             ) : (
               <p className="text-sm text-zinc-500">
@@ -179,6 +236,14 @@ const Profile = () => {
         </div>
 
         <UpdateProfile open={open} setOpen={setOpen} />
+        <TakeTestModal
+          isOpen={isTestModalOpen}
+          onClose={() => {
+            setIsTestModalOpen(false);
+            setIsSuggesting(false);
+          }}
+          skills={user?.profile?.skills || []}
+        />
       </div>
     </div>
   );

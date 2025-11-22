@@ -177,7 +177,7 @@ def test_on_video(model_path='./models/emotion_resnet50.pth',
 if __name__ == "__main__":
     model_path = './models/emotion_resnet34.pth'
     labels_path = './models/emotion_labels.json'
-    video_path = './videos/interview_video3.mp4'
+    video_path = './videos/interview_video.mp4'
     
     if len(sys.argv) > 1:
         model_path = sys.argv[1]

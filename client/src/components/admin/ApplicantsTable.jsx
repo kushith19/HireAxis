@@ -86,6 +86,7 @@ const ApplicantsTable = () => {
             <TableHead className="text-zinc-700 font-medium">Email</TableHead>
             <TableHead className="text-zinc-700 font-medium">Contact</TableHead>
             <TableHead className="text-zinc-700 font-medium">Resume</TableHead>
+            <TableHead className="text-zinc-700 font-medium">Score</TableHead>
             <TableHead className="text-zinc-700 font-medium">Date</TableHead>
             <TableHead className="text-right text-zinc-700 font-medium">
               Status
@@ -125,6 +126,15 @@ const ApplicantsTable = () => {
                       </a>
                     ) : (
                       <span className="text-zinc-500 text-sm">Not provided</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-zinc-700">
+                    {item?.applicant?.profile?.testResults?.finalScore !== undefined ? (
+                      <span className="font-medium text-zinc-800">
+                        {item.applicant.profile.testResults.finalScore.toFixed(1)}/100
+                      </span>
+                    ) : (
+                      <span className="text-zinc-500 text-sm italic">Test not taken</span>
                     )}
                   </TableCell>
                   <TableCell className="text-zinc-700">
@@ -179,7 +189,7 @@ const ApplicantsTable = () => {
           ) : (
             <TableRow>
               <TableCell
-                colSpan={6}
+                colSpan={7}
                 className="text-center py-8 text-zinc-500 italic"
               >
                 No applicants yet

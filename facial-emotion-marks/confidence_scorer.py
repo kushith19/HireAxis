@@ -3,6 +3,8 @@ Simple Confidence Score Calculator
 Analyzes interview videos using trained emotion and stress models
 """
 
+from pathlib import Path
+
 import cv2
 import torch
 import torch.nn as nn
@@ -14,22 +16,65 @@ import numpy as np
 
 
 class ConfidenceScorer:
-    def __init__(self):
-        self.device = 'mps' if torch.backends.mps.is_available() else 'cuda' if torch.cuda.is_available() else 'cpu'
+    def __init__(
+        self,
+        emotion_model_path=None,
+        stress_model_path=None,
+        use_stress_model=True,
+    ):
+        self.base_dir = Path(__file__).resolve().parent
+        self.device = (
+            "mps"
+            if torch.backends.mps.is_available()
+            else "cuda"
+            if torch.cuda.is_available()
+            else "cpu"
+        )
         print(f"🖥️  Using device: {self.device}")
-        
-        # Load emotion model
-        print("📦 Loading emotion model...")
-        self.emotion_model = self._load_model("facial_resnet34_2.pth", num_classes=8)
-        with open('facial_labels.json', 'r') as f:
-            self.emotion_labels = json.load(f)
-        
-        # Load stress model
-        print("📦 Loading stress model...")
-        self.stress_model = self._load_model("facial_stress_resnet50.pth", num_classes=2)
-        with open('facial_labels_stress.json', 'r') as f:
-            self.stress_labels = json.load(f)
-        
+
+        default_emotion_path = self.base_dir / "models" / "emotion_resnet34.pth"
+        default_stress_path = self.base_dir / "models" / "stress_detector_resnet50.pth"
+
+        self.emotion_model_path = Path(
+            emotion_model_path or default_emotion_path
+        ).resolve()
+
+        self.emotion_labels = self._load_labels(
+            ["models/emotion_labels.json", "facial_labels.json"]
+        )
+        print(f"📦 Loading emotion model from {self.emotion_model_path}")
+        self.emotion_model = self._load_model(
+            self.emotion_model_path, num_classes=len(self.emotion_labels)
+        )
+
+        self.stress_model = None
+        self.stress_labels = None
+        if use_stress_model:
+            stress_path = Path(
+                stress_model_path or default_stress_path
+            ).resolve()
+            if stress_path.exists():
+                try:
+                    self.stress_labels = self._load_labels(
+                        ["models/stress_labels.json", "facial_labels_stress.json"]
+                    )
+                    print(f"📦 Loading stress model from {stress_path}")
+                    self.stress_model = self._load_model(
+                        stress_path, num_classes=len(self.stress_labels)
+                    )
+                except FileNotFoundError:
+                    print(
+                        "⚠️  Stress label file not found. "
+                        "Continuing with emotion model only."
+                    )
+                    self.stress_model = None
+                    self.stress_labels = None
+            else:
+                print(
+                    f"⚠️  Stress model not found at {stress_path}. "
+                    "Continuing with emotion model only."
+                )
+
         print("✅ Models loaded successfully!\n")
         
         # Face detector
@@ -57,15 +102,40 @@ class ConfidenceScorer:
             'contempt': -0.6    # Negative
         }
     
+    def _resolve_path(self, path):
+        path = Path(path)
+        if not path.is_absolute():
+            path = self.base_dir / path
+        return path
+
+    def _load_labels(self, candidate_paths):
+        for rel_path in candidate_paths:
+            labels_path = self._resolve_path(rel_path)
+            if labels_path.exists():
+                with open(labels_path, "r") as f:
+                    return json.load(f)
+        raise FileNotFoundError(
+            f"Could not find any label file in {candidate_paths}"
+        )
+
     def _load_model(self, path, num_classes):
-        """Load ResNet50 model"""
-        model = models.resnet50(weights=None)
+        model_path = self._resolve_path(path)
+        if not model_path.exists():
+            raise FileNotFoundError(f"Model file not found: {model_path}")
+
+        name = model_path.name.lower()
+        if "resnet18" in name:
+            model = models.resnet18(weights=None)
+        elif "resnet34" in name:
+            model = models.resnet34(weights=None)
+        else:
+            model = models.resnet50(weights=None)
         num_ftrs = model.fc.in_features
         model.fc = nn.Sequential(
             nn.Dropout(0.2),
             nn.Linear(num_ftrs, num_classes)
         )
-        model.load_state_dict(torch.load(path, map_location=self.device))
+        model.load_state_dict(torch.load(model_path, map_location=self.device))
         model = model.to(self.device)
         model.eval()
         return model
@@ -85,44 +155,46 @@ class ConfidenceScorer:
         frame_scores = []
         total_frames = 0
         face_detected_frames = 0
-        
+
         while True:
             ret, frame = cap.read()
             if not ret:
                 break
-            
+
             total_frames += 1
-            
-            # Detect face
+
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             faces = self.face_cascade.detectMultiScale(
                 gray, scaleFactor=1.1, minNeighbors=5, minSize=(80, 80)
             )
-            
+
             if len(faces) == 0:
                 continue
-            
+
             face_detected_frames += 1
-            
-            # Get largest face
+
             (x, y, w, h) = max(faces, key=lambda f: f[2] * f[3])
             face_roi = frame[y:y+h, x:x+w]
-            
-            # Predict emotion and stress
+
             emotion, emotion_conf = self._predict_emotion(face_roi)
-            stress, stress_conf = self._predict_stress(face_roi)
-            
-            # Calculate frame score
-            frame_score = self._calculate_frame_score(emotion, emotion_conf, stress, stress_conf)
-            
-            # Store data
+            if self.stress_model:
+                stress, stress_conf = self._predict_stress(face_roi)
+            else:
+                stress, stress_conf = "nostress", 1.0
+
+            frame_score = self._calculate_frame_score(
+                emotion, emotion_conf, stress, stress_conf
+            )
+
             emotion_history.append(emotion)
             stress_history.append(stress)
             frame_scores.append(frame_score)
-            
-            # Progress
+
             if total_frames % 50 == 0:
-                print(f"📊 Processed {total_frames} frames... (Score so far: {np.mean(frame_scores):.1f})")
+                print(
+                    f"📊 Processed {total_frames} frames... "
+                    f"(Score so far: {np.mean(frame_scores):.1f})"
+                )
         
         cap.release()
         
@@ -172,19 +244,19 @@ class ConfidenceScorer:
         Calculate confidence score for single frame (0-100)
         
         Components:
-        1. Emotion Score (60% weight) - positive emotions = higher score
-        2. Stress Score (40% weight) - no stress = higher score
+        1. Stress Score (70% weight) - no stress = higher score
+        2. Emotion Score (30% weight) - positive emotions = higher score
         """
-        # Emotion contribution
+        # Stress contribution (70% weight)
+        if stress == 'nostress':
+            stress_score = stress_conf * 70
+        else:
+            stress_score = (1 - stress_conf) * 70
+        
+        # Emotion contribution (30% weight)
         emotion_weight = self.emotion_weights.get(emotion, 0)
         # Convert from [-1, 1] to [0, 100]
-        emotion_score = ((emotion_weight + 1) / 2) * emotion_conf * 60
-        
-        # Stress contribution
-        if stress == 'nostress':
-            stress_score = stress_conf * 40
-        else:
-            stress_score = (1 - stress_conf) * 40
+        emotion_score = ((emotion_weight + 1) / 2) * emotion_conf * 30
         
         total = emotion_score + stress_score
         return max(0, min(100, total))
@@ -232,11 +304,11 @@ class ConfidenceScorer:
         
         # FINAL CONFIDENCE SCORE (weighted average)
         confidence_score = (
-            avg_confidence * 0.40 +        # 40% - Frame-by-frame confidence
-            engagement_ratio * 0.20 +      # 20% - Face visibility
-            positive_ratio * 0.20 +        # 20% - Positive emotions
+            avg_confidence * 0.35 +        # 35% - Frame-by-frame confidence (includes stress-weighted frames)
+            engagement_ratio * 0.15 +      # 15% - Face visibility
+            positive_ratio * 0.10 +        # 10% - Positive emotions
             stability * 0.10 +             # 10% - Emotional consistency
-            (100 - stress_percentage) * 0.10  # 10% - Low stress
+            (100 - stress_percentage) * 0.30  # 30% - Low stress (increased weight)
         )
         
         # Determine confidence level
@@ -261,6 +333,12 @@ class ConfidenceScorer:
             grade = "F"
             recommendation = "❌ Poor performance - Significant confidence issues"
         
+        emotion_distribution = {
+            k: round(v, 2)
+            for k, v in emotion_percentages.items()
+            if k.lower() != "neutral"
+        }
+        
         return {
             'confidence_score': round(confidence_score, 2),
             'confidence_level': level,
@@ -275,9 +353,7 @@ class ConfidenceScorer:
                 'stress_percentage': round(stress_percentage, 2)
             },
             
-            'emotion_distribution': {
-                k: round(v, 2) for k, v in emotion_percentages.items()
-            },
+            'emotion_distribution': emotion_distribution,
             
             'stats': {
                 'total_frames': total_frames,

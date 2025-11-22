@@ -29,12 +29,20 @@ const CategoryCarousel = () => {
     navigate("discover");
   };
 
+  const categoryColors = [
+    "border-blue-200 text-blue-700 hover:border-blue-300",
+    "border-indigo-200 text-indigo-700 hover:border-indigo-300",
+    "border-purple-200 text-purple-700 hover:border-purple-300",
+    "border-teal-200 text-teal-700 hover:border-teal-300",
+    "border-emerald-200 text-emerald-700 hover:border-emerald-300",
+  ];
+
   return (
-    <section className="pb-16 bg-gradient-to-r from-zinc-50 via-zinc-100 to-zinc-50">
+    <section className="py-16">
       <div className="max-w-5xl mx-auto text-center px-6">
       
-        <h2 className="text-2xl sm:text-3xl font-bold text-zinc-900 mb-8">
-          Browse by <span className="text-zinc-700">Categories</span>
+        <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-8">
+          Browse by <span className="text-indigo-600">Categories</span>
         </h2>
 
        
@@ -48,7 +56,7 @@ const CategoryCarousel = () => {
                 <Button
                   variant="outline"
                   onClick={() => searchJobHandler(cat)}
-                  className="w-full py-6 border-zinc-300 text-zinc-700 font-medium rounded-xl bg-white hover:bg-zinc-100 transition-all"
+                  className={`w-full py-6 font-medium rounded-xl transition-all shadow-sm bg-white ${categoryColors[index % categoryColors.length]}`}
                 >
                   {cat}
                 </Button>
@@ -57,8 +65,8 @@ const CategoryCarousel = () => {
           </CarouselContent>
 
       
-          <CarouselPrevious className="left-2 bg-white/90 border border-zinc-300 shadow-sm hover:bg-zinc-100" />
-          <CarouselNext className="right-2 bg-white/90 border border-zinc-300 shadow-sm hover:bg-zinc-100" />
+          <CarouselPrevious className="left-2 bg-white/90 border border-blue-200 shadow-sm hover:border-blue-300" />
+          <CarouselNext className="right-2 bg-white/90 border border-blue-200 shadow-sm hover:border-blue-300" />
         </Carousel>
       </div>
     </section>
