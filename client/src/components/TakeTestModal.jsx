@@ -194,11 +194,45 @@ const TakeTestModal = ({ isOpen, onClose, skills = [] }) => {
     }
   };
 
-  const handleRetake = () => {
+  const handleRetake = async () => {
     stopRecording();
     setRecordedBlob(null);
     setAnalysisResult(null);
-    setStep("ready");
+    setCurrentQuestionIndex(0);
+    
+    // Clean up old stream
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach(track => track.stop());
+      mediaStreamRef.current = null;
+    }
+    
+    // Fetch new questions for retake
+    setIsLoadingQuestions(true);
+    try {
+      await fetchQuestions();
+    } catch (error) {
+      console.error("Error fetching new questions on retake:", error);
+      // Continue anyway with existing questions
+    } finally {
+      setIsLoadingQuestions(false);
+    }
+    
+    // Re-request camera permissions to restart the stream
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
+      });
+      mediaStreamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      setStep("ready");
+    } catch (err) {
+      console.error("Permission error on retake:", err);
+      setStep("permissions");
+      setPermissionError("Camera and microphone permissions are required to retake the test.");
+    }
   };
 
   const sendToFacialAnalysis = async () => {

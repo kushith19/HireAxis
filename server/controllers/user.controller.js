@@ -1,4 +1,5 @@
 import { User } from "../models/user.model.js";
+import { Job } from "../models/job.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import getDataUri from "../utils/datauri.js";
@@ -271,5 +272,121 @@ export const downloadResume = async (req, res) => {
   } catch (error) {
     console.error("Download resume error:", error);
     res.status(500).send("Error downloading file");
+  }
+};
+
+// ================= SAVED JOBS =================
+
+const populateSavedJobs = async (userDoc) => {
+  if (!userDoc) return [];
+  await userDoc.populate({
+    path: "savedJobs",
+    populate: { path: "company", select: "name location logo" },
+  });
+  return userDoc.savedJobs || [];
+};
+
+export const getSavedJobs = async (req, res) => {
+  try {
+    const user = await User.findById(req.id);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+    const savedJobs = await populateSavedJobs(user);
+    return res.status(200).json({ success: true, savedJobs });
+  } catch (error) {
+    console.error("Get saved jobs error:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch saved jobs" });
+  }
+};
+
+export const saveJob = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    if (!jobId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Job ID is required" });
+    }
+
+    const jobExists = await Job.findById(jobId);
+    if (!jobExists) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Job not found" });
+    }
+
+    const user = await User.findById(req.id);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    const alreadySaved = user.savedJobs?.some(
+      (savedId) => savedId.toString() === jobId
+    );
+    if (alreadySaved) {
+      const savedJobs = await populateSavedJobs(user);
+      return res.status(200).json({
+        success: true,
+        message: "Job already saved",
+        savedJobs,
+      });
+    }
+
+    user.savedJobs.push(jobId);
+    await user.save();
+    const savedJobs = await populateSavedJobs(user);
+
+    return res.status(200).json({
+      success: true,
+      message: "Job saved successfully",
+      savedJobs,
+    });
+  } catch (error) {
+    console.error("Save job error:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to save job" });
+  }
+};
+
+export const removeSavedJob = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    if (!jobId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Job ID is required" });
+    }
+
+    const user = await User.findById(req.id);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+
+    user.savedJobs = user.savedJobs.filter(
+      (savedId) => savedId.toString() !== jobId
+    );
+    await user.save();
+    const savedJobs = await populateSavedJobs(user);
+
+    return res.status(200).json({
+      success: true,
+      message: "Job removed from saved list",
+      savedJobs,
+    });
+  } catch (error) {
+    console.error("Remove saved job error:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to remove saved job" });
   }
 };

@@ -2,11 +2,22 @@ import { Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge"; 
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
+import { USER_API_END_POINT } from "@/utils/constant";
+import { setSavedJobs } from "@/redux/jobSlice";
+import { toast } from "sonner";
 
 const Job = ({ job, isSuggested, relevanceScore, matchedSkills }) => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const { user } = useSelector((store) => store.auth);
+    const { savedJobs } = useSelector((store) => store.job);
+    const [isUpdatingSave, setIsUpdatingSave] = useState(false);
+
+    const isJobSaved = savedJobs?.some((savedJob) => savedJob?._id === job?._id);
     
     // Function to calculate days ago (kept for existing logic)
     const daysAgoFunction = (mongodbTime) => {
@@ -22,6 +33,35 @@ const Job = ({ job, isSuggested, relevanceScore, matchedSkills }) => {
         if (score >= 60) return "bg-yellow-100 text-yellow-800 border-yellow-500";
         return "bg-red-100 text-red-800 border-red-500";
     }
+
+    const handleSaveToggle = async () => {
+        if (!user) {
+            toast.error("Please log in to save jobs");
+            return;
+        }
+
+        setIsUpdatingSave(true);
+        try {
+            const endpoint = `${USER_API_END_POINT}/saved-jobs/${job?._id}`;
+            const config = { withCredentials: true };
+            const response = isJobSaved
+                ? await axios.delete(endpoint, config)
+                : await axios.post(endpoint, {}, config);
+
+            if (response.data.success) {
+                dispatch(setSavedJobs(response.data.savedJobs || []));
+                toast.success(
+                    isJobSaved ? "Removed from saved jobs" : "Saved to your jobs"
+                );
+            }
+        } catch (error) {
+            const message =
+                error.response?.data?.message || "Failed to update saved jobs";
+            toast.error(message);
+        } finally {
+            setIsUpdatingSave(false);
+        }
+    };
 
     return (
         <div className="p-4 rounded-lg border border-zinc-200 bg-white hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col">
@@ -43,9 +83,11 @@ const Job = ({ job, isSuggested, relevanceScore, matchedSkills }) => {
                 <Button
                     variant="outline"
                     size="icon"
-                    className="rounded-full h-7 w-7 hover:border-zinc-600 hover:text-zinc-600 transition-colors"
+                    className={`rounded-full h-7 w-7 transition-colors ${isJobSaved ? "border-blue-500 text-blue-600" : "hover:border-zinc-600 hover:text-zinc-600"}`}
+                    onClick={handleSaveToggle}
+                    disabled={isUpdatingSave}
                 >
-                    <Bookmark className="h-3.5 w-3.5" />
+                    <Bookmark className={`h-3.5 w-3.5 ${isJobSaved ? "fill-blue-600 text-blue-600" : ""}`} />
                 </Button>
             </div>
 
@@ -85,10 +127,12 @@ const Job = ({ job, isSuggested, relevanceScore, matchedSkills }) => {
                     View
                 </Button>
                 <Button
-                    variant="outline"
-                    className="h-8 text-xs hover:border-zinc-600 hover:text-zinc-600 transition-colors"
+                    variant={isJobSaved ? "default" : "outline"}
+                    className={`h-8 text-xs transition-colors ${isJobSaved ? "bg-blue-600 hover:bg-blue-500 text-white" : "hover:border-zinc-600 hover:text-zinc-600"}`}
+                    onClick={handleSaveToggle}
+                    disabled={isUpdatingSave}
                 >
-                    Save
+                    {isUpdatingSave ? "Saving..." : isJobSaved ? "Saved" : "Save"}
                 </Button>
             </div>
         </div>

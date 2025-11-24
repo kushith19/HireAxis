@@ -10,53 +10,56 @@ const execAsync = promisify(exec);
 const FACIAL_SERVICE_URL =
   process.env.FACIAL_SERVICE_URL || "http://127.0.0.1:5002";
 const OLLAMA_API_URL = process.env.OLLAMA_API_URL || "http://localhost:11434";
-const OLLAMA_MODEL = process.env.OLLAMA_MODEL || "llama3";
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || "llama3.1:8b";
 
 /**
- * Extract audio from video using ffmpeg
+ * Transcribe video directly using OpenAI Whisper via the Python service
+ * Whisper can handle video files directly, so no need for FFmpeg
  */
-async function extractAudio(videoPath, audioPath) {
+async function transcribeVideo(videoPath) {
   try {
-    // Check if ffmpeg is available
-    await execAsync("which ffmpeg || which ffmpeg.exe || echo 'ffmpeg not found'");
-    
-    // Extract audio to WAV format
-    await execAsync(
-      `ffmpeg -i "${videoPath}" -vn -acodec pcm_s16le -ar 16000 -ac 1 "${audioPath}" -y`
-    );
-    return true;
-  } catch (error) {
-    console.error("Audio extraction error:", error.message);
-    return false;
-  }
-}
-
-/**
- * Transcribe audio using Ollama (if available) or return placeholder
- * For production, replace with proper speech-to-text service (Google Cloud Speech, Whisper, etc.)
- */
-async function transcribeAudio(audioPath) {
-  try {
-    // Check if audio file exists
-    if (!fs.existsSync(audioPath)) {
-      console.warn("Audio file not found for transcription");
+    // Check if video file exists
+    if (!fs.existsSync(videoPath)) {
+      console.warn("Video file not found for transcription");
       return "";
     }
 
-    // Try using Ollama for transcription if available
-    // Note: This is a basic approach - for production, use dedicated STT services
     try {
-      // Read audio file as base64 (Ollama can handle audio in some models)
-      // For now, we'll use a text-based approach since most Ollama models are text-only
-      // In production, integrate: Google Cloud Speech-to-Text, AWS Transcribe, OpenAI Whisper API
-      
-      console.log("Transcription: Audio extracted successfully. Using placeholder transcript.");
-      console.log("NOTE: For accurate transcription, integrate a speech-to-text service.");
-      
-      // Return placeholder - in production, this should be actual transcription
-      return "Candidate provided answers to the interview questions. [Transcription service not configured - using placeholder]";
-    } catch (ollamaErr) {
-      console.error("Ollama transcription error:", ollamaErr.message);
+      // Send video file directly to Whisper transcription service
+      const formData = new FormData();
+      formData.append("video", fs.createReadStream(videoPath), {
+        filename: path.basename(videoPath),
+        contentType: "video/webm"
+      });
+
+      const response = await axios.post(
+        `${FACIAL_SERVICE_URL}/transcribe-video`,
+        formData,
+        {
+          headers: formData.getHeaders(),
+          timeout: 180000, // 3 minutes timeout for transcription
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity
+        }
+      );
+
+      if (response.data.success && response.data.transcript) {
+        console.log("Transcription completed successfully");
+        console.log("Transcript preview:", response.data.transcript.substring(0, 100));
+        return response.data.transcript;
+      } else {
+        console.warn("Transcription service returned no transcript");
+        console.warn("Response data:", JSON.stringify(response.data, null, 2));
+        return "";
+      }
+    } catch (whisperErr) {
+      console.error("Whisper transcription error:");
+      console.error("Status:", whisperErr?.response?.status);
+      console.error("Status text:", whisperErr?.response?.statusText);
+      console.error("Response data:", whisperErr?.response?.data);
+      console.error("Error message:", whisperErr.message);
+      console.error("Full error:", whisperErr);
+      // Fallback to empty transcript if Whisper fails
       return "";
     }
   } catch (error) {
@@ -70,7 +73,9 @@ async function transcribeAudio(audioPath) {
  */
 async function analyzeCorrectness(questions, transcript) {
   const scores = [];
-  const OLLAMA_API_BASE = `${OLLAMA_API_URL}/api/generate`;
+  // Try /api/chat first (newer Ollama), fallback to /api/generate
+  const OLLAMA_API_BASE = `${OLLAMA_API_URL}/api/chat`;
+  const OLLAMA_API_BASE_FALLBACK = `${OLLAMA_API_URL}/api/generate`;
 
   // Split transcript into segments (rough estimate - 3 questions = 3 segments)
   // This is a simple approach - in production, you'd use timestamps or silence detection
@@ -127,16 +132,60 @@ Return ONLY a JSON object with this exact format:
 
 Do not include any other text or formatting.`;
 
-      const response = await axios.post(
-        OLLAMA_API_BASE,
-        {
-          model: OLLAMA_MODEL,
-          prompt: prompt,
-          stream: false,
-          format: "json"
-        },
-        { timeout: 30000 }
-      );
+      let response;
+      try {
+        // Try /api/chat endpoint first (newer Ollama versions)
+        console.log(`Attempting Ollama /api/chat with model: ${OLLAMA_MODEL}`);
+        response = await axios.post(
+          OLLAMA_API_BASE,
+          {
+            model: OLLAMA_MODEL,
+            messages: [
+              {
+                role: "user",
+                content: prompt
+              }
+            ],
+            stream: false,
+            format: "json"
+          },
+          { timeout: 120000 }
+        );
+        // Extract response from chat format
+        if (response.data.message && response.data.message.content) {
+          response.data.response = response.data.message.content;
+        } else if (response.data.response) {
+          // Already in the right format
+          console.log("Response already in correct format");
+        } else {
+          console.warn("Unexpected response format from /api/chat:", Object.keys(response.data));
+        }
+      } catch (chatErr) {
+        console.error("Ollama /api/chat error:", chatErr.response?.status, chatErr.response?.statusText);
+        console.error("Error details:", chatErr.message);
+        // Fallback to /api/generate endpoint (older Ollama versions)
+        if (chatErr.response?.status === 404 || chatErr.code === 'ECONNREFUSED') {
+          console.log("Trying fallback /api/generate endpoint...");
+          try {
+            response = await axios.post(
+              OLLAMA_API_BASE_FALLBACK,
+              {
+                model: OLLAMA_MODEL,
+                prompt: prompt,
+                stream: false,
+                format: "json"
+              },
+              { timeout: 120000 }
+            );
+            console.log("Fallback /api/generate succeeded");
+          } catch (generateErr) {
+            console.error("Ollama /api/generate also failed:", generateErr.response?.status, generateErr.message);
+            throw generateErr;
+          }
+        } else {
+          throw chatErr;
+        }
+      }
 
       let score = 0; // Default to 0 for strict evaluation
       let reasoning = "Unable to parse response";
@@ -277,27 +326,23 @@ export const analyzeInterview = async (req, res) => {
       );
     }
 
-    // 2. Audio Extraction and Transcription
-    const audioPath = videoPath.replace(/\.[^.]+$/, ".wav");
+    // 2. Video Transcription (Whisper handles video directly, no FFmpeg needed)
     let transcript = "";
     let correctnessScores = [];
 
     try {
-      // Extract audio
-      const audioExtracted = await extractAudio(videoPath, audioPath);
+      // Transcribe video directly using Whisper
+      transcript = await transcribeVideo(videoPath);
       
-      if (audioExtracted && fs.existsSync(audioPath)) {
-        // Transcribe audio
-        transcript = await transcribeAudio(audioPath);
-        
-        // Log transcript for debugging
-        console.log("\n=== TRANSCRIPT DEBUG ===");
-        console.log("Transcript length:", transcript.length);
-        console.log("Transcript content:", transcript);
-        console.log("Questions:", questions);
-        console.log("=======================\n");
-        
-        // Analyze correctness for each question
+      // Log transcript for debugging
+      console.log("\n=== TRANSCRIPT DEBUG ===");
+      console.log("Transcript length:", transcript.length);
+      console.log("Transcript content:", transcript);
+      console.log("Questions:", questions);
+      console.log("=======================\n");
+      
+      // Analyze correctness for each question
+      if (transcript && transcript.trim().length > 0) {
         correctnessScores = await analyzeCorrectness(questions, transcript);
         
         // Log correctness scores
@@ -308,23 +353,13 @@ export const analyzeInterview = async (req, res) => {
           console.log(`Reasoning: ${item.reasoning}`);
         });
         console.log("==========================\n");
-        
-        // Clean up audio file
-        try {
-          fs.unlinkSync(audioPath);
-        } catch (unlinkErr) {
-          console.warn("Failed to delete audio file:", unlinkErr.message);
-        }
       } else {
-        console.warn("Audio extraction failed, using fallback scoring");
-        console.log("Audio path:", audioPath);
-        console.log("Audio exists:", fs.existsSync(audioPath));
-        // Fallback: analyze with empty transcript
+        console.warn("No transcript available, using fallback scoring");
         correctnessScores = await analyzeCorrectness(questions, "");
       }
-    } catch (audioErr) {
-      console.error("Audio processing error:", audioErr.message);
-      console.error("Error stack:", audioErr.stack);
+    } catch (transcriptionErr) {
+      console.error("Transcription processing error:", transcriptionErr.message);
+      console.error("Error stack:", transcriptionErr.stack);
       // Fallback scoring
       correctnessScores = await analyzeCorrectness(questions, "");
     }

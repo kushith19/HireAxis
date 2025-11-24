@@ -3,6 +3,7 @@ import NavBar from "./shared/NavBar";
 import FilterCard from "./FilterCard";
 import Job from "./Job";
 import { useSelector } from "react-redux";
+import useGetSavedJobs from "../hooks/useGetSavedJobs";
 
 
 const filterData = [
@@ -35,6 +36,7 @@ const parseSalary = (salaryString) => {
 
 const Jobs = () => {
   const { allJobs, searchQuery } = useSelector((store) => store.job);
+  useGetSavedJobs();
 
   const filteredJobs = useMemo(() => {
     if (!searchQuery || searchQuery.length === 0) {

@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import AppliedJobTable from "./AppliedJobTable";
+import SavedJobsTable from "./SavedJobsTable";
 import UpdateProfile from "./UpdateProfile";
 import TakeTestModal from "./TakeTestModal";
 import { useSelector } from "react-redux";
 import useGetAppliedJobs from "../hooks/useGetAppliedJobs";
+import useGetSavedJobs from "../hooks/useGetSavedJobs";
 import { toast } from "sonner";
 
 // --- RESTORED ORIGINAL IMPORT ---
@@ -18,6 +20,7 @@ import { USER_API_END_POINT } from "../utils/constant";
 
 const Profile = () => {
   useGetAppliedJobs();
+  useGetSavedJobs();
 
   const [open, setOpen] = useState(false);
   // Use a placeholder if user is not available in props
@@ -233,6 +236,14 @@ const Profile = () => {
           </h1>
 
           <AppliedJobTable />
+        </div>
+
+        <div className="bg-zinc-50 border border-zinc-300 mt-8 rounded-2xl shadow-sm overflow-hidden">
+          <h1 className="text-lg font-semibold text-zinc-900 mb-3 px-6 pt-6">
+            Saved Jobs
+          </h1>
+
+          <SavedJobsTable />
         </div>
 
         <UpdateProfile open={open} setOpen={setOpen} />

@@ -5,6 +5,9 @@ import {
     register,
     updateProfile,
     downloadResume,
+    saveJob,
+    getSavedJobs,
+    removeSavedJob,
 } from "../controllers/user.controller.js";
 import isAuthenticated from "../middlewares/isAuthenticated.js";
 // FIX: Import both new Multer middlewares
@@ -38,5 +41,8 @@ router.get(
     suggestJobs
 );
 
+router.get('/saved-jobs', isAuthenticated, getSavedJobs);
+router.post('/saved-jobs/:jobId', isAuthenticated, saveJob);
+router.delete('/saved-jobs/:jobId', isAuthenticated, removeSavedJob);
 
 export default router;

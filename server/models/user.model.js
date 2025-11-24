@@ -41,6 +41,15 @@ const userSchema=new mongoose.Schema({
       videoPath:{type:String}
     }
   },
+  savedJobs: {
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Job',
+      }
+    ],
+    default: []
+  },
 },{timestamps:true});
 
 // Check if model already exists to prevent overwrite error
