@@ -1,4 +1,4 @@
-(BUILDING AS WE SPEAK)
+
 
 Full-Stack Job Portal Backend: Built to integrate seamlessly with a MERN stack frontend.
 
